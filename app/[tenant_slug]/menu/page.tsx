@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -10,18 +10,14 @@ import {
   Trash2,
   Settings,
   UtensilsCrossed,
-  Clock,
   Filter,
   CheckCircle2,
-  AlertTriangle,
-  RotateCcw,
-  Truck,
   ToggleLeft,
   ToggleRight,
   Zap,
   Loader2,
 } from 'lucide-react'
-import type { Tenant, MenuItem } from '@/lib/types'
+import type { MenuItem } from '@/lib/types'
 
 const CATEGORIES = ['Pizza', 'Pasta', 'Drikkevarer', 'Tilbehør', 'Dessert', 'Andet']
 
@@ -29,7 +25,7 @@ export default function MenuPage() {
   const { tenant_slug } = useParams<{ tenant_slug: string }>()
   const supabase = createClient()
 
-  const [tenant, setTenant] = useState<Tenant | null>(null)
+  const [tenantId, setTenantId] = useState<string | null>(null)
   const [menuItems, setMenuItems] = useState<MenuItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -37,29 +33,16 @@ export default function MenuPage() {
   const [newItem, setNewItem] = useState({ name: '', price: '', description: '', category: 'Pizza' })
   const [saving, setSaving] = useState(false)
 
-  // Operationelle indstillinger
-  const [isOnline, setIsOnline] = useState(true)
-  const [waitTime, setWaitTime] = useState(10)
-  const [deliveryEnabled, setDeliveryEnabled] = useState(true)
-  const [deliveryPrice, setDeliveryPrice] = useState(29)
-  const [deliveryTime, setDeliveryTime] = useState(45)
-
   useEffect(() => {
     async function load() {
       const { data: t } = await supabase
         .from('tenants')
-        .select('*')
+        .select('id')
         .eq('slug', tenant_slug)
         .single()
 
       if (t) {
-        setTenant(t)
-        setIsOnline(t.is_online ?? true)
-        setWaitTime(t.wait_time ?? 10)
-        setDeliveryEnabled(t.delivery_enabled ?? true)
-        setDeliveryPrice(t.delivery_price ?? 29)
-        setDeliveryTime(t.delivery_time ?? 45)
-
+        setTenantId(t.id)
         const { data: items } = await supabase
           .from('menu_items')
           .select('*')
@@ -73,11 +56,6 @@ export default function MenuPage() {
     load()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tenant_slug])
-
-  const saveSettings = useCallback(async (updates: Partial<Tenant>) => {
-    if (!tenant) return
-    await supabase.from('tenants').update(updates).eq('id', tenant.id)
-  }, [tenant, supabase])
 
   const filteredMenu = useMemo(() =>
     menuItems.filter(item =>
@@ -97,12 +75,12 @@ export default function MenuPage() {
 
   async function addItem(e: React.FormEvent) {
     e.preventDefault()
-    if (!tenant || !newItem.name || !newItem.price) return
+    if (!tenantId || !newItem.name || !newItem.price) return
     setSaving(true)
     const { data } = await supabase
       .from('menu_items')
       .insert({
-        tenant_id: tenant.id,
+        tenant_id: tenantId,
         name: newItem.name.trim(),
         category: newItem.category,
         description: newItem.description.trim(),
@@ -116,20 +94,6 @@ export default function MenuPage() {
     setNewItem({ name: '', price: '', description: '', category: 'Pizza' })
     setIsAddingItem(false)
     setSaving(false)
-  }
-
-  function addStressTime() {
-    const newWait = waitTime + 10
-    const newDelivery = deliveryEnabled ? deliveryTime + 10 : deliveryTime
-    setWaitTime(newWait)
-    if (deliveryEnabled) setDeliveryTime(newDelivery)
-    saveSettings({ wait_time: newWait, delivery_time: newDelivery })
-  }
-
-  function resetTimes() {
-    setWaitTime(10)
-    setDeliveryTime(45)
-    saveSettings({ wait_time: 10, delivery_time: 45 })
   }
 
   if (loading) {
@@ -151,108 +115,6 @@ export default function MenuPage() {
         <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] italic mt-1">
           Automatiseringen kender din menu – hold den skarp her.
         </p>
-      </div>
-
-      {/* Operationelle kontroller */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-        {/* Ventetid */}
-        <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock size={14} className="text-[#cc5533]" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Live Ventetid</span>
-          </div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="text-3xl font-black italic tracking-tighter text-slate-800">
-              {waitTime} <span className="text-sm uppercase text-slate-400">min</span>
-            </div>
-            <button onClick={resetTimes} className="p-2 text-slate-300 hover:text-[#cc5533] transition-colors" title="Nulstil tider">
-              <RotateCcw size={16} />
-            </button>
-          </div>
-          <button
-            onClick={addStressTime}
-            className="w-full bg-orange-50 hover:bg-orange-100 text-[#cc5533] py-3 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 group leading-none"
-          >
-            <AlertTriangle size={14} className="group-hover:animate-bounce" />
-            <span className="text-[10px] font-black uppercase tracking-widest italic">+10 Min Stress</span>
-          </button>
-        </div>
-
-        {/* Levering */}
-        <div className="bg-white border border-slate-200 rounded-[2rem] p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Truck size={14} className="text-blue-500" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Levering</span>
-            </div>
-            <button
-              onClick={() => {
-                const next = !deliveryEnabled
-                setDeliveryEnabled(next)
-                saveSettings({ delivery_enabled: next })
-              }}
-              className={`transition-all ${deliveryEnabled ? 'text-blue-500' : 'text-slate-300'}`}
-            >
-              {deliveryEnabled ? <ToggleRight size={32} strokeWidth={1.5} /> : <ToggleLeft size={32} strokeWidth={1.5} />}
-            </button>
-          </div>
-          <div className={`space-y-2 transition-all duration-300 ${deliveryEnabled ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
-            <div className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2 border border-slate-100">
-              <span className="text-[9px] font-black uppercase text-slate-400 italic">Pris (kr.)</span>
-              <input
-                type="number"
-                value={deliveryPrice}
-                onChange={(e) => setDeliveryPrice(parseInt(e.target.value) || 0)}
-                onBlur={() => saveSettings({ delivery_price: deliveryPrice })}
-                className="bg-transparent text-right text-sm font-black text-slate-800 focus:outline-none w-12"
-              />
-            </div>
-            <div className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-2 border border-slate-100">
-              <span className="text-[9px] font-black uppercase text-slate-400 italic">Tid (min.)</span>
-              <input
-                type="number"
-                value={deliveryTime}
-                onChange={(e) => setDeliveryTime(parseInt(e.target.value) || 0)}
-                onBlur={() => saveSettings({ delivery_time: deliveryTime })}
-                className="bg-transparent text-right text-sm font-black text-slate-800 focus:outline-none w-12"
-              />
-            </div>
-            <p className="text-[8px] font-bold uppercase text-slate-400 text-center italic">
-              {deliveryEnabled ? 'Levering tilbydes kunder nu' : 'Kun afhentning muligt'}
-            </p>
-          </div>
-        </div>
-
-        {/* Mait AI status */}
-        <div className={`rounded-[2rem] p-6 relative overflow-hidden transition-all duration-500 ${isOnline ? 'bg-slate-900 shadow-xl' : 'bg-slate-100 border border-slate-200'}`}>
-          <div className="flex flex-col gap-4 relative z-10">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`} />
-                <span className={`text-[10px] font-black italic uppercase tracking-widest ${isOnline ? 'text-white' : 'text-slate-500'}`}>
-                  Mait er {isOnline ? 'Online' : 'Offline'}
-                </span>
-              </div>
-              <button
-                onClick={() => {
-                  const next = !isOnline
-                  setIsOnline(next)
-                  saveSettings({ is_online: next })
-                }}
-                className={`transition-all ${isOnline ? 'text-[#cc5533]' : 'text-slate-300'}`}
-              >
-                {isOnline ? <ToggleRight size={36} strokeWidth={1.5} /> : <ToggleLeft size={36} strokeWidth={1.5} />}
-              </button>
-            </div>
-            <p className="text-[9px] font-bold uppercase leading-tight text-slate-400 italic">
-              {isOnline
-                ? 'AI-assistenten besvarer alle opkald og beskeder nu.'
-                : 'AI er deaktiveret. Kunder kan ikke bestille digitalt.'}
-            </p>
-          </div>
-          <UtensilsCrossed className="absolute -bottom-8 -right-8 w-32 h-32 opacity-5 -rotate-12" />
-        </div>
       </div>
 
       {/* Tilføj ny ret */}
@@ -438,7 +300,7 @@ export default function MenuPage() {
               Mait AI Opdateres Live
             </h4>
             <p className="text-slate-400 font-medium italic text-sm max-w-xl leading-relaxed">
-              Når du deaktiverer en ret eller ændrer prisen her, lærer din Mait-assistent det øjeblikkeligt. Den vil automatisk informere kunderne i telefonen og på chatten – herunder også den aktuelle ventetid på {waitTime} minutter, levering til {deliveryPrice} kr. og en udbringstid på {deliveryTime} minutter.
+              Når du deaktiverer en ret eller ændrer prisen her, lærer din Mait-assistent det øjeblikkeligt og informerer automatisk kunderne.
             </p>
           </div>
         </div>
