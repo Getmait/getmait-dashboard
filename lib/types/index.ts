@@ -6,6 +6,10 @@ export interface Tenant {
   email: string | null
   plan: 'starter' | 'pro' | 'enterprise'
   is_active: boolean
+  cvr: string | null
+  address: string | null
+  zip_city: string | null
+  opening_hours: Record<string, string>
   created_at: string
 }
 
@@ -14,6 +18,8 @@ export interface TenantUser {
   tenant_id: string
   user_id: string
   role: 'owner' | 'staff'
+  display_name: string | null
+  phone: string | null
   created_at: string
 }
 

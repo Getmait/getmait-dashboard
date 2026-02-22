@@ -191,3 +191,23 @@ CREATE POLICY "tenant_users_can_update_own_customers"
       SELECT tenant_id FROM tenant_users WHERE user_id = auth.uid()
     )
   );
+
+-- ============================================================
+-- 002: Settings - Forretningsinfo + Brugerprofil
+-- ============================================================
+
+ALTER TABLE public.tenants
+  ADD COLUMN IF NOT EXISTS cvr           TEXT,
+  ADD COLUMN IF NOT EXISTS address       TEXT,
+  ADD COLUMN IF NOT EXISTS zip_city      TEXT,
+  ADD COLUMN IF NOT EXISTS opening_hours JSONB NOT NULL DEFAULT
+    '{"mandag":"11:00 - 21:00","tirsdag":"11:00 - 21:00","onsdag":"11:00 - 21:00","torsdag":"11:00 - 21:00","fredag":"11:00 - 22:00","lordag":"12:00 - 22:00","sondag":"12:00 - 21:00"}';
+
+ALTER TABLE public.tenant_users
+  ADD COLUMN IF NOT EXISTS display_name TEXT,
+  ADD COLUMN IF NOT EXISTS phone        TEXT;
+
+CREATE POLICY IF NOT EXISTS "users_can_update_own_tenant_user"
+  ON public.tenant_users FOR UPDATE
+  TO authenticated
+  USING (user_id = auth.uid());
