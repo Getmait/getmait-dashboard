@@ -9,6 +9,7 @@ import {
   MessageSquare,
   Settings,
   Zap,
+  Pizza,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Tenant } from '@/lib/types'
@@ -16,6 +17,7 @@ import type { Tenant } from '@/lib/types'
 const navItems = (slug: string) => [
   { href: `/${slug}/dashboard`, label: 'Overblik', icon: LayoutDashboard },
   { href: `/${slug}/orders`, label: 'Bestillinger', icon: ShoppingBag },
+  { href: `/${slug}/menu`, label: 'Menu', icon: Pizza },
   { href: `/${slug}/customers`, label: 'Kundeklub', icon: Users },
   { href: `/${slug}/sms`, label: 'SMS', icon: MessageSquare },
   { href: `/${slug}/settings`, label: 'Indstillinger', icon: Settings },

@@ -10,6 +10,22 @@ export interface Tenant {
   address: string | null
   zip_city: string | null
   opening_hours: Record<string, string>
+  is_online: boolean
+  wait_time: number
+  delivery_enabled: boolean
+  delivery_price: number
+  delivery_time: number
+  created_at: string
+}
+
+export interface MenuItem {
+  id: string
+  tenant_id: string
+  name: string
+  category: string
+  description: string
+  price: number
+  is_active: boolean
   created_at: string
 }
 

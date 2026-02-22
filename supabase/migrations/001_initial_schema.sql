@@ -211,3 +211,45 @@ CREATE POLICY IF NOT EXISTS "users_can_update_own_tenant_user"
   ON public.tenant_users FOR UPDATE
   TO authenticated
   USING (user_id = auth.uid());
+
+-- ============================================================
+-- 003: Menu-items + operationelle indstillinger
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.menu_items (
+  id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  tenant_id   UUID        NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  name        TEXT        NOT NULL,
+  category    TEXT        NOT NULL DEFAULT 'Pizza',
+  description TEXT        NOT NULL DEFAULT '',
+  price       NUMERIC     NOT NULL DEFAULT 0,
+  is_active   BOOLEAN     NOT NULL DEFAULT true,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_menu_items_tenant_id ON public.menu_items(tenant_id);
+
+ALTER TABLE public.menu_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "tenant_users_can_read_own_menu"
+  ON public.menu_items FOR SELECT TO authenticated
+  USING (tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()));
+
+CREATE POLICY "tenant_users_can_insert_menu"
+  ON public.menu_items FOR INSERT TO authenticated
+  WITH CHECK (tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()));
+
+CREATE POLICY "tenant_users_can_update_own_menu"
+  ON public.menu_items FOR UPDATE TO authenticated
+  USING (tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()));
+
+CREATE POLICY "tenant_users_can_delete_own_menu"
+  ON public.menu_items FOR DELETE TO authenticated
+  USING (tenant_id IN (SELECT tenant_id FROM public.tenant_users WHERE user_id = auth.uid()));
+
+ALTER TABLE public.tenants
+  ADD COLUMN IF NOT EXISTS is_online        BOOLEAN  NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS wait_time        INTEGER  NOT NULL DEFAULT 10,
+  ADD COLUMN IF NOT EXISTS delivery_enabled BOOLEAN  NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS delivery_price   INTEGER  NOT NULL DEFAULT 29,
+  ADD COLUMN IF NOT EXISTS delivery_time    INTEGER  NOT NULL DEFAULT 45;
