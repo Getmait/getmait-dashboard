@@ -27,11 +27,12 @@ export async function POST(req: NextRequest) {
 
   const { data: store } = await supabase
     .from('stores')
-    .select('phone_number')
+    .select('phone_number, sms_phone')
     .eq('id', tenant.store_id)
     .single()
 
-  if (!store?.phone_number) {
+  const fromNumber = store?.sms_phone || store?.phone_number
+  if (!fromNumber) {
     return NextResponse.json({ error: 'Ingen Twilio-nummer tilknyttet denne butik' }, { status: 400 })
   }
 
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       message: message.trim(),
-      from_number: store.phone_number,
+      from_number: fromNumber,
       recipients: customers,
       campaign_id: campaign?.id ?? null,
     }),
