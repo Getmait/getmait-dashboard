@@ -59,6 +59,15 @@ export function Sidebar({ tenant }: SidebarProps) {
 
   async function save(updates: Partial<Tenant>) {
     await supabase.from('tenants').update(updates).eq('id', tenant.id)
+    // Sync relevante felter til stores-tabellen (widget læser herfra)
+    if (tenant.store_id) {
+      const storeUpdates: Record<string, unknown> = {}
+      if (updates.wait_time !== undefined) storeUpdates.waiting_time = updates.wait_time
+      if (updates.is_online !== undefined) storeUpdates.is_open = updates.is_online
+      if (Object.keys(storeUpdates).length > 0) {
+        await supabase.from('stores').update(storeUpdates).eq('id', tenant.store_id)
+      }
+    }
   }
 
   function addStressTime() {
