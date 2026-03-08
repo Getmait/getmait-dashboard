@@ -26,12 +26,17 @@ function getCallType(order: Ordrer): string {
   return 'Info'
 }
 
-function parseOrdreDetaljer(raw: string): string {
+function parseOrdreDetaljer(raw: string, menuNrMap: Record<string, string> = {}): string {
   try {
     const items = JSON.parse(raw)
     if (Array.isArray(items)) {
       return items
-        .map((i: { antal?: number; navn?: string }) => `${i.antal ?? 1}x ${i.navn ?? '?'}`)
+        .map((i: { antal?: number; navn?: string }) => {
+          const navn = i.navn ?? '?'
+          const nr = menuNrMap[navn.toLowerCase()]
+          const label = nr ? `Nr.${nr} ${navn}` : navn
+          return `${i.antal ?? 1}x ${label}`
+        })
         .join(', ')
     }
   } catch { /* ikke JSON */ }
@@ -54,12 +59,24 @@ export default async function VoicePage({
 
   if (!tenant) redirect('/login')
 
-  const { data: ordrer } = await supabase
-    .from('ordrer')
-    .select('*')
-    .eq('store_id', tenant.store_id)
-    .order('oprettet_at', { ascending: false })
-    .limit(50)
+  const [{ data: ordrer }, { data: menuRetter }] = await Promise.all([
+    supabase
+      .from('ordrer')
+      .select('*')
+      .eq('store_id', tenant.store_id)
+      .order('oprettet_at', { ascending: false })
+      .limit(50),
+    supabase
+      .from('menu')
+      .select('nr, navn')
+      .eq('store_id', tenant.store_id)
+      .not('nr', 'is', null),
+  ])
+
+  const menuNrMap: Record<string, string> = {}
+  for (const item of menuRetter ?? []) {
+    if (item.navn && item.nr) menuNrMap[item.navn.toLowerCase()] = item.nr
+  }
 
   const alle = (ordrer ?? []) as Ordrer[]
   const now = new Date()
@@ -182,7 +199,7 @@ export default async function VoicePage({
                   {alle.slice(0, 20).map((order) => {
                     const callStatus = getCallStatus(order)
                     const callType = getCallType(order)
-                    const resumé = parseOrdreDetaljer(order.ordre_detaljer)
+                    const resumé = parseOrdreDetaljer(order.ordre_detaljer, menuNrMap)
                     return (
                       <tr key={order.id} className="hover:bg-slate-50/50 transition-colors group">
                         <td className="px-8 py-5">

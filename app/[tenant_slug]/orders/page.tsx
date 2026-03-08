@@ -14,12 +14,17 @@ import { format } from 'date-fns'
 import { da } from 'date-fns/locale'
 import type { Ordrer } from '@/lib/types'
 
-function parseOrdreDetaljer(raw: string): string {
+function parseOrdreDetaljer(raw: string, menuNrMap: Record<string, string> = {}): string {
   try {
     const items = JSON.parse(raw)
     if (Array.isArray(items)) {
       return items
-        .map((i: { antal?: number; navn?: string }) => `${i.antal ?? 1}x ${i.navn ?? '?'}`)
+        .map((i: { antal?: number; navn?: string }) => {
+          const navn = i.navn ?? '?'
+          const nr = menuNrMap[navn.toLowerCase()]
+          const label = nr ? `Nr.${nr} ${navn}` : navn
+          return `${i.antal ?? 1}x ${label}`
+        })
         .join(', ')
     }
   } catch { /* ikke JSON */ }
@@ -43,11 +48,23 @@ export default async function OrdersPage({
 
   if (!tenant) redirect('/login')
 
-  const { data: ordrer } = await supabase
-    .from('ordrer')
-    .select('*')
-    .eq('store_id', tenant.store_id)
-    .order('oprettet_at', { ascending: false })
+  const [{ data: ordrer }, { data: menuRetter }] = await Promise.all([
+    supabase
+      .from('ordrer')
+      .select('*')
+      .eq('store_id', tenant.store_id)
+      .order('oprettet_at', { ascending: false }),
+    supabase
+      .from('menu')
+      .select('nr, navn')
+      .eq('store_id', tenant.store_id)
+      .not('nr', 'is', null),
+  ])
+
+  const menuNrMap: Record<string, string> = {}
+  for (const item of menuRetter ?? []) {
+    if (item.navn && item.nr) menuNrMap[item.navn.toLowerCase()] = item.nr
+  }
 
   const alle = (ordrer ?? []) as Ordrer[]
   const now = new Date()
@@ -191,7 +208,7 @@ export default async function OrdersPage({
                     </td>
                     <td className="px-6 py-5 max-w-xs">
                       <p className="text-[11px] font-bold text-slate-500 italic leading-snug truncate">
-                        {parseOrdreDetaljer(order.ordre_detaljer)}
+                        {parseOrdreDetaljer(order.ordre_detaljer, menuNrMap)}
                       </p>
                     </td>
                     <td className="px-6 py-5">
