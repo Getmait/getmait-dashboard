@@ -200,16 +200,16 @@ export default function SettingsPage() {
   const initial = displayName.charAt(0).toUpperCase()
 
   const inputClass =
-    'w-full bg-slate-50 border-2 border-transparent rounded-[2rem] py-6 pl-16 pr-8 text-sm font-bold focus:border-[#cc5533]/20 focus:bg-white outline-none transition-all placeholder:text-slate-300 text-slate-900'
+    'w-full bg-slate-50 border-2 border-transparent rounded-[2rem] py-6 pl-16 pr-8 text-sm font-bold focus:border-[#ea580c]/20 focus:bg-white outline-none transition-all placeholder:text-slate-300 text-slate-900'
 
   const labelClass =
     'text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 italic leading-none block'
 
   const iconWrap =
-    'absolute inset-y-0 left-6 flex items-center text-slate-300 group-focus-within/input:text-[#cc5533] transition-colors pointer-events-none'
+    'absolute inset-y-0 left-6 flex items-center text-slate-300 group-focus-within/input:text-[#ea580c] transition-colors pointer-events-none'
 
   const submitBtn =
-    'bg-slate-900 text-white px-10 py-6 rounded-[2.2rem] font-black uppercase italic text-xs tracking-[0.2em] shadow-xl hover:bg-[#cc5533] active:scale-95 transition-all flex items-center gap-3 min-w-[200px] justify-center leading-none disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-slate-900 disabled:hover:scale-100'
+    'bg-slate-900 text-white px-10 py-6 rounded-[2.2rem] font-black uppercase italic text-xs tracking-[0.2em] shadow-xl hover:bg-[#ea580c] active:scale-95 transition-all flex items-center gap-3 min-w-[200px] justify-center leading-none disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-slate-900 disabled:hover:scale-100'
 
   return (
     <div className="min-h-full text-slate-900 pb-16">
@@ -217,18 +217,18 @@ export default function SettingsPage() {
       {/* Atmosfærisk baggrund */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-orange-100/30 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#cc5533]/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#ea580c]/5 rounded-full blur-[120px]" />
       </div>
 
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 bg-white px-4 py-1.5 rounded-full shadow-sm border border-slate-100 mb-1">
-            <Settings size={14} className="text-[#cc5533]" />
+            <Settings size={14} className="text-[#ea580c]" />
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Indstillinger</span>
           </div>
           <h1 className="text-5xl font-black uppercase italic tracking-tighter text-slate-900 leading-none">
-            Min <span className="text-[#cc5533]">Konto</span>
+            Min <span className="text-[#ea580c]">Konto</span>
           </h1>
         </div>
 
@@ -271,7 +271,7 @@ export default function SettingsPage() {
               <h3 className="text-2xl font-black uppercase italic tracking-tighter text-slate-900 leading-none">
                 {displayName}
               </h3>
-              <p className="text-[#cc5533] font-bold text-[10px] uppercase tracking-[0.2em] mt-2 italic">
+              <p className="text-[#ea580c] font-bold text-[10px] uppercase tracking-[0.2em] mt-2 italic">
                 {tenant?.name ?? ''}
               </p>
 
@@ -327,7 +327,7 @@ export default function SettingsPage() {
             {activeTab === 'profile' && (
               <div className="space-y-8">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-orange-50 rounded-lg text-[#cc5533]"><User size={20} /></div>
+                  <div className="p-2 bg-orange-50 rounded-lg text-[#ea580c]"><User size={20} /></div>
                   <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">Personlig Profil</h2>
                 </div>
                 <form onSubmit={handleSaveProfile} className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -383,7 +383,7 @@ export default function SettingsPage() {
             {activeTab === 'business' && (
               <div className="space-y-10">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-orange-50 rounded-lg text-[#cc5533]"><Store size={20} /></div>
+                  <div className="p-2 bg-orange-50 rounded-lg text-[#ea580c]"><Store size={20} /></div>
                   <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">Forretningsinfo</h2>
                 </div>
                 <form onSubmit={handleSaveBusiness} className="space-y-10">
@@ -445,7 +445,7 @@ export default function SettingsPage() {
                   {/* Åbningstider */}
                   <div className="space-y-6">
                     <div className="flex items-center gap-3">
-                      <Clock size={18} className="text-[#cc5533]" />
+                      <Clock size={18} className="text-[#ea580c]" />
                       <h3 className="text-xl font-black uppercase italic tracking-tighter text-slate-800">Åbningstider</h3>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 bg-slate-50/50 p-6 rounded-[2.5rem] border border-slate-100">
@@ -459,7 +459,7 @@ export default function SettingsPage() {
                             type="text"
                             value={tid}
                             onChange={(e) => setOpeningHours((h) => ({ ...h, [dag]: e.target.value }))}
-                            className="bg-transparent text-right text-xs font-bold text-slate-700 focus:text-[#cc5533] outline-none w-32"
+                            className="bg-transparent text-right text-xs font-bold text-slate-700 focus:text-[#ea580c] outline-none w-32"
                           />
                         </div>
                       ))}
@@ -479,7 +479,7 @@ export default function SettingsPage() {
             {activeTab === 'security' && (
               <div className="space-y-10">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-orange-50 rounded-2xl text-[#cc5533]"><KeyRound size={24} /></div>
+                  <div className="p-3 bg-orange-50 rounded-2xl text-[#ea580c]"><KeyRound size={24} /></div>
                   <div>
                     <h2 className="text-3xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">Sikkerhed</h2>
                     <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">Skift din adgangskode herunder</p>
@@ -533,7 +533,7 @@ export default function SettingsPage() {
                       {isSaving ? <Loader2 className="animate-spin" size={20} /> : <>OPDATER ADGANGSKODE <ChevronRight size={20} /></>}
                     </button>
                     <div className="p-6 bg-orange-50/50 rounded-[2rem] border border-orange-100 flex items-start gap-4 max-w-lg">
-                      <AlertCircle size={20} className="text-[#cc5533] shrink-0 mt-0.5" />
+                      <AlertCircle size={20} className="text-[#ea580c] shrink-0 mt-0.5" />
                       <p className="text-[11px] font-medium text-slate-500 leading-relaxed italic">
                         Når du skifter din adgangskode, vil du blive logget ud af alle andre aktive enheder.
                       </p>
@@ -574,14 +574,14 @@ export default function SettingsPage() {
       <footer className="mt-20 flex flex-col items-center space-y-4 text-center opacity-30">
         <div className="flex items-center gap-10">
           <div className="flex items-center gap-2">
-            <ShieldCheck size={14} className="text-[#cc5533]" />
+            <ShieldCheck size={14} className="text-[#ea580c]" />
             <span className="text-[10px] font-black uppercase tracking-widest italic">Sikker datahåndtering</span>
           </div>
           <span className="text-[10px] font-black uppercase tracking-widest italic">Support: help@getmait.dk</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[8px] font-black uppercase tracking-[0.5em] italic">GetMait Partner Portal</span>
-          <Sparkles size={9} className="text-[#cc5533]" />
+          <Sparkles size={9} className="text-[#ea580c]" />
         </div>
       </footer>
     </div>

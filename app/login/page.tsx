@@ -53,14 +53,14 @@ function LoginForm() {
     const { data: session } = await supabase.auth.getSession()
     if (!session.session) return
 
-    const { data: tenantUser } = await supabase
+    const { data: tenantUsers } = await supabase
       .from('tenant_users')
       .select('tenants!inner(slug)')
       .eq('user_id', session.session.user.id)
-      .single()
+      .limit(1)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const slug = (tenantUser?.tenants as any)?.slug as string | undefined
+    const slug = (tenantUsers?.[0]?.tenants as any)?.slug as string | undefined
     if (slug) {
       router.push(`/${slug}/dashboard`)
     } else {

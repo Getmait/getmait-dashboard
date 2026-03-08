@@ -15,7 +15,24 @@ export interface Tenant {
   delivery_enabled: boolean
   delivery_price: number
   delivery_time: number
+  store_id: number | null
   created_at: string
+}
+
+export interface Ordrer {
+  id: number
+  kunde_tlf: string | null
+  ordre_detaljer: string
+  total_pris: number | null
+  status: string
+  oprettet_at: string
+  kunde_navn: string | null
+  store_id: number | null
+  session_id: string | null
+  levering: boolean | null
+  pris_levering: number | null
+  from_number: string | null
+  delivery_address: string | null
 }
 
 export interface MenuItem {
@@ -74,6 +91,7 @@ export interface Customer {
   tenant_id: string
   name: string
   phone: string
+  address: string | null
   order_count: number
   last_order_at: string | null
   opted_in_sms: boolean
