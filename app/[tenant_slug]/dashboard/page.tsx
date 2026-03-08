@@ -66,6 +66,20 @@ export default async function DashboardPage({
 
   const seneste = alle.slice(0, 5)
 
+  function parseOrdreDetaljer(raw: string): string {
+    try {
+      const items = JSON.parse(raw)
+      if (Array.isArray(items)) {
+        return items
+          .map((i: { antal?: number; navn?: string; pris?: number }) =>
+            `${i.antal ?? 1}x ${i.navn ?? '?'}`
+          )
+          .join(', ')
+      }
+    } catch { /* ikke JSON */ }
+    return raw
+  }
+
   const stats = [
     {
       label: 'Omsætning via Mait',
@@ -219,7 +233,7 @@ export default async function DashboardPage({
                           </span>
                         </div>
                         <p className="text-[10px] text-slate-500 font-bold italic tracking-tight leading-none max-w-xs truncate">
-                          {order.ordre_detaljer}
+                          {parseOrdreDetaljer(order.ordre_detaljer)}
                         </p>
                       </div>
                     </div>
