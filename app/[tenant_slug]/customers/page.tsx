@@ -8,14 +8,12 @@ import {
   MessageSquare,
   Users,
   Zap,
-  Wand2,
   Send,
   TrendingUp,
   Gift,
   Activity,
   ShieldCheck,
   Search,
-  Sparkles,
 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { format } from 'date-fns'
@@ -28,11 +26,6 @@ function getCustomerStatus(orderCount: number): 'Stamkunde' | 'Aktiv' | 'Inaktiv
   return 'Inaktiv'
 }
 
-const AI_TEMPLATES = [
-  "Halløj {{Navn}}! Det er ved at være tid til din faste yndlingsret. Jeg har sat 15% rabat ind på dit nummer i dag, hvis du bestiller inden kl. 18. Svar JA for bestilling.",
-  "Hey {{Navn}}, vejret kalder på hygge! Hvad med en varm middag til at lune på? Som tak fordi du er stamkunde, giver vi en gratis sodavand med i aften. Svar JA.",
-  "Godaften {{Navn}}! Det er længe siden vi har set dig. Her er en 20% rabat til dig i aften — kun til dig. Svar blot JA for bestilling!",
-]
 
 export default function KundeklubPage() {
   const { tenant, loading: tenantLoading } = useTenant()
@@ -44,13 +37,15 @@ export default function KundeklubPage() {
       (tenant?.name ?? 'os') +
       '. Besvar blot med Ja.'
   )
-  const [isGeneratingAi, setIsGeneratingAi] = useState(false)
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
 
   const smsRecipients = customers.filter((c) => c.opted_in_sms)
   const totalSmsSent = campaigns.reduce((sum, c) => sum + (c.sent_to_count ?? 0), 0)
+  const konverteringPct = campaigns.length > 0
+    ? Math.min(Math.round((campaigns[0]?.sent_to_count ?? 0) / Math.max(smsRecipients.length, 1) * 100), 100)
+    : 0
 
   const fetchCampaigns = useCallback(async () => {
     if (!tenant?.id) return
@@ -66,14 +61,6 @@ export default function KundeklubPage() {
   useEffect(() => {
     fetchCampaigns()
   }, [fetchCampaigns])
-
-  function generateAiSms() {
-    setIsGeneratingAi(true)
-    setTimeout(() => {
-      setSmsText(AI_TEMPLATES[Math.floor(Math.random() * AI_TEMPLATES.length)])
-      setIsGeneratingAi(false)
-    }, 1200)
-  }
 
   async function handleSend() {
     if (!smsText.trim() || !tenant?.id || smsRecipients.length === 0) return
@@ -124,8 +111,8 @@ export default function KundeklubPage() {
         </div>
         <div className="flex gap-3">
           <div className="bg-orange-50 border border-orange-100 px-5 py-3 rounded-2xl text-center">
-            <p className="text-[8px] font-black text-[#cc5533] uppercase tracking-widest leading-none mb-1">Medlemmer</p>
-            <p className="text-xl font-black italic text-[#cc5533] leading-none">{smsRecipients.length}</p>
+            <p className="text-[8px] font-black text-[#ea580c] uppercase tracking-widest leading-none mb-1">Medlemmer</p>
+            <p className="text-xl font-black italic text-[#ea580c] leading-none">{smsRecipients.length}</p>
           </div>
           <div className="bg-slate-900 px-5 py-3 rounded-2xl text-center shadow-lg">
             <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">SMS Sendt</p>
@@ -143,23 +130,13 @@ export default function KundeklubPage() {
           <section className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm relative overflow-hidden">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
-                <div className="bg-[#cc5533] p-3.5 rounded-2xl text-white shadow-lg">
+                <div className="bg-[#ea580c] p-3.5 rounded-2xl text-white shadow-lg">
                   <MessageSquare size={22} fill="white" />
                 </div>
                 <h3 className="text-xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">
                   Opret SMS Kampagne
                 </h3>
               </div>
-              <button
-                onClick={generateAiSms}
-                disabled={isGeneratingAi}
-                className="flex items-center gap-2 px-5 py-2.5 bg-orange-50 text-[#cc5533] rounded-xl font-black text-[10px] uppercase tracking-widest italic hover:bg-orange-100 transition-all border border-orange-100 shadow-sm disabled:opacity-50"
-              >
-                {isGeneratingAi
-                  ? <Zap size={14} className="animate-spin" />
-                  : <Wand2 size={14} />}
-                {isGeneratingAi ? 'Mait tænker...' : 'Generér med AI'}
-              </button>
             </div>
 
             <div className="space-y-6">
@@ -171,26 +148,19 @@ export default function KundeklubPage() {
                   rows={4}
                   value={smsText}
                   onChange={(e) => setSmsText(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-2xl p-5 text-sm font-medium focus:ring-4 focus:ring-[#cc5533]/5 outline-none transition-all shadow-inner text-slate-700 leading-relaxed italic resize-none"
+                  className="w-full bg-white border border-slate-200 rounded-2xl p-5 text-sm font-medium focus:ring-4 focus:ring-[#ea580c]/5 outline-none transition-all shadow-inner text-slate-700 leading-relaxed italic resize-none"
                 />
                 <div className="flex gap-2 mt-4">
                   {['Navn'].map((tag) => (
                     <button
                       key={tag}
                       onClick={() => setSmsText((t) => t + ` {{${tag}}}`)}
-                      className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black text-slate-400 uppercase hover:border-[#cc5533] hover:text-[#cc5533] transition-all leading-none"
+                      className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black text-slate-400 uppercase hover:border-[#ea580c] hover:text-[#ea580c] transition-all leading-none"
                     >
                       + {tag}
                     </button>
                   ))}
                 </div>
-                {isGeneratingAi && (
-                  <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-[2rem]">
-                    <div className="flex items-center gap-3 text-[#cc5533] font-black italic uppercase text-xs tracking-widest leading-none">
-                      <Sparkles size={20} className="animate-pulse" /> Optimering i gang...
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div className="flex flex-col md:flex-row gap-6 justify-between items-center">
@@ -212,7 +182,7 @@ export default function KundeklubPage() {
                 <button
                   onClick={handleSend}
                   disabled={sending || !smsText.trim() || smsRecipients.length === 0}
-                  className="bg-slate-900 text-white px-10 py-5 rounded-[1.8rem] font-black text-xs uppercase tracking-[0.2em] italic hover:bg-[#cc5533] transition-all shadow-2xl flex items-center gap-4 group disabled:opacity-40"
+                  className="bg-slate-900 text-white px-10 py-5 rounded-[1.8rem] font-black text-xs uppercase tracking-[0.2em] italic hover:bg-[#ea580c] transition-all shadow-2xl flex items-center gap-4 group disabled:opacity-40"
                 >
                   {sent ? '✓ SENDT!' : sending ? 'SENDER...' : (
                     <>UDSEND KAMPAGNE <Send size={18} className="group-hover:translate-x-1 transition-transform" /></>
@@ -248,7 +218,7 @@ export default function KundeklubPage() {
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-[0.2em] italic border-b border-slate-100">
-                    <th className="px-8 py-5 text-[#cc5533]">Navn / Status</th>
+                    <th className="px-8 py-5 text-[#ea580c]">Navn / Status</th>
                     <th className="px-6 py-5">Tlf. nummer</th>
                     <th className="px-6 py-5">Leveringsadresse</th>
                     <th className="px-6 py-5">Bestillinger</th>
@@ -275,7 +245,7 @@ export default function KundeklubPage() {
                             <span
                               className={`text-[9px] font-black uppercase px-2 py-1 rounded-md w-fit leading-none ${
                                 status === 'Stamkunde'
-                                  ? 'bg-orange-100 text-[#cc5533]'
+                                  ? 'bg-orange-100 text-[#ea580c]'
                                   : status === 'Aktiv'
                                   ? 'bg-green-50 text-green-600'
                                   : 'bg-slate-100 text-slate-400'
@@ -320,9 +290,7 @@ export default function KundeklubPage() {
               <div className="flex justify-between items-end">
                 <div>
                   <p className="text-5xl font-black italic tracking-tighter text-white leading-none">
-                    {campaigns.length > 0
-                      ? `${Math.min(Math.round((campaigns[0]?.sent_to_count ?? 0) / Math.max(smsRecipients.length, 1) * 100), 100)}%`
-                      : '—'}
+                    {campaigns.length > 0 ? `${konverteringPct}%` : '—'}
                   </p>
                   <p className="text-[10px] font-bold uppercase text-slate-500 tracking-widest mt-2 italic leading-none">
                     {campaigns.length > 0 ? 'Seneste kampagne' : 'Ingen kampagner endnu'}
@@ -335,7 +303,7 @@ export default function KundeklubPage() {
               <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden shadow-inner">
                 <div
                   className="bg-orange-500 h-full shadow-[0_0_15px_#f97316] transition-all duration-700"
-                  style={{ width: campaigns.length > 0 ? '68%' : '0%' }}
+                  style={{ width: `${konverteringPct}%` }}
                 />
               </div>
             </div>
@@ -344,7 +312,7 @@ export default function KundeklubPage() {
           {/* LOYALITET */}
           <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm relative group overflow-hidden">
             <div className="flex items-center gap-3 mb-6">
-              <div className="bg-slate-50 p-3 rounded-2xl text-slate-400 group-hover:text-[#cc5533] transition-colors shadow-sm">
+              <div className="bg-slate-50 p-3 rounded-2xl text-slate-400 group-hover:text-[#ea580c] transition-colors shadow-sm">
                 <Gift size={20} />
               </div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-800 leading-none">
@@ -360,7 +328,7 @@ export default function KundeklubPage() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-black uppercase italic text-slate-400 leading-none">SMS-tilmeldte</span>
-                <span className="text-sm font-black italic text-[#cc5533] leading-none">{smsRecipients.length}</span>
+                <span className="text-sm font-black italic text-[#ea580c] leading-none">{smsRecipients.length}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-black uppercase italic text-slate-400 leading-none">Kampagner sendt</span>
@@ -372,8 +340,8 @@ export default function KundeklubPage() {
           {/* MAIT AI INDSIGT */}
           <div className="bg-orange-50 rounded-[2.5rem] p-8 border border-orange-100 relative overflow-hidden group">
             <div className="flex items-center gap-3 mb-5">
-              <Zap size={20} className="text-[#cc5533] fill-[#cc5533]" />
-              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] italic leading-none text-[#cc5533]">
+              <Zap size={20} className="text-[#ea580c] fill-[#ea580c]" />
+              <h4 className="text-[10px] font-black uppercase tracking-[0.3em] italic leading-none text-[#ea580c]">
                 Mait AI Indsigt
               </h4>
             </div>
@@ -382,7 +350,10 @@ export default function KundeklubPage() {
                 ? `Du har ${customers.filter((c) => getCustomerStatus(c.order_count) === 'Inaktiv').length} inaktive kunder. Skal jeg sende dem et "Savner dig"-tilbud?`
                 : 'Dine kunder er aktive. Overvej en kampagne for at booste omsætningen i weekenden.'}
             </p>
-            <button className="mt-5 text-[10px] font-black uppercase tracking-widest text-[#cc5533] underline decoration-2 underline-offset-8 hover:text-orange-700 transition-all leading-none block">
+            <button
+              onClick={() => document.querySelector('textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+              className="mt-5 text-[10px] font-black uppercase tracking-widest text-[#ea580c] underline decoration-2 underline-offset-8 hover:text-orange-700 transition-all leading-none block"
+            >
               Opret kampagne
             </button>
             <Activity size={80} className="absolute -bottom-6 -right-6 opacity-[0.03] group-hover:scale-110 transition-transform text-slate-900" />
@@ -394,7 +365,7 @@ export default function KundeklubPage() {
       {/* GDPR FOOTER */}
       <div className="bg-slate-900 rounded-[3rem] p-10 text-white flex items-center justify-between shadow-2xl relative overflow-hidden">
         <div className="relative z-10 flex items-center gap-8">
-          <div className="bg-[#cc5533] p-5 rounded-[1.5rem] shadow-xl">
+          <div className="bg-[#ea580c] p-5 rounded-[1.5rem] shadow-xl">
             <ShieldCheck size={28} className="text-white" />
           </div>
           <div>
