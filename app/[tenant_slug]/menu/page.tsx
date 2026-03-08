@@ -17,16 +17,25 @@ import {
   Zap,
   Loader2,
 } from 'lucide-react'
-import type { MenuItem } from '@/lib/types'
-
 const CATEGORIES = ['Pizza', 'Pasta', 'Drikkevarer', 'Tilbehør', 'Dessert', 'Andet']
+
+interface MenuRet {
+  id: number
+  navn: string
+  beskrivelse: string | null
+  pris: number
+  kategori: string | null
+  tilgaengelig: boolean
+  store_id: number
+  nr: string | null
+}
 
 export default function MenuPage() {
   const { tenant_slug } = useParams<{ tenant_slug: string }>()
   const supabase = createClient()
 
-  const [tenantId, setTenantId] = useState<string | null>(null)
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([])
+  const [storeId, setStoreId] = useState<number | null>(null)
+  const [menuItems, setMenuItems] = useState<MenuRet[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [isAddingItem, setIsAddingItem] = useState(false)
@@ -37,17 +46,17 @@ export default function MenuPage() {
     async function load() {
       const { data: t } = await supabase
         .from('tenants')
-        .select('id')
+        .select('store_id')
         .eq('slug', tenant_slug)
         .single()
 
-      if (t) {
-        setTenantId(t.id)
+      if (t?.store_id) {
+        setStoreId(t.store_id)
         const { data: items } = await supabase
-          .from('menu_items')
+          .from('menu')
           .select('*')
-          .eq('tenant_id', t.id)
-          .order('created_at', { ascending: false })
+          .eq('store_id', t.store_id)
+          .order('kategori', { ascending: true })
 
         setMenuItems(items ?? [])
       }
@@ -59,38 +68,38 @@ export default function MenuPage() {
 
   const filteredMenu = useMemo(() =>
     menuItems.filter(item =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchTerm.toLowerCase())
+      item.navn.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.kategori ?? '').toLowerCase().includes(searchTerm.toLowerCase())
     ), [menuItems, searchTerm])
 
-  async function toggleStatus(id: string, current: boolean) {
-    setMenuItems(prev => prev.map(i => i.id === id ? { ...i, is_active: !current } : i))
-    await supabase.from('menu_items').update({ is_active: !current }).eq('id', id)
+  async function toggleStatus(id: number, current: boolean) {
+    setMenuItems(prev => prev.map(i => i.id === id ? { ...i, tilgaengelig: !current } : i))
+    await supabase.from('menu').update({ tilgaengelig: !current }).eq('id', id)
   }
 
-  async function deleteItem(id: string) {
+  async function deleteItem(id: number) {
     setMenuItems(prev => prev.filter(i => i.id !== id))
-    await supabase.from('menu_items').delete().eq('id', id)
+    await supabase.from('menu').delete().eq('id', id)
   }
 
   async function addItem(e: React.FormEvent) {
     e.preventDefault()
-    if (!tenantId || !newItem.name || !newItem.price) return
+    if (!storeId || !newItem.name || !newItem.price) return
     setSaving(true)
     const { data } = await supabase
-      .from('menu_items')
+      .from('menu')
       .insert({
-        tenant_id: tenantId,
-        name: newItem.name.trim(),
-        category: newItem.category,
-        description: newItem.description.trim(),
-        price: parseFloat(newItem.price),
-        is_active: true,
+        store_id: storeId,
+        navn: newItem.name.trim(),
+        kategori: newItem.category,
+        beskrivelse: newItem.description.trim(),
+        pris: parseFloat(newItem.price),
+        tilgaengelig: true,
       })
       .select()
       .single()
 
-    if (data) setMenuItems(prev => [data, ...prev])
+    if (data) setMenuItems(prev => [...prev, data])
     setNewItem({ name: '', price: '', description: '', category: 'Pizza' })
     setIsAddingItem(false)
     setSaving(false)
@@ -223,41 +232,41 @@ export default function MenuPage() {
               {filteredMenu.map((item) => (
                 <tr
                   key={item.id}
-                  className={`group hover:bg-slate-50/50 transition-all ${!item.is_active ? 'opacity-40 grayscale' : ''}`}
+                  className={`group hover:bg-slate-50/50 transition-all ${!item.tilgaengelig ? 'opacity-40 grayscale' : ''}`}
                 >
                   <td className="px-10 py-7">
                     <div className="flex flex-col gap-1">
                       <span className="text-lg font-black uppercase italic tracking-tighter text-slate-800 leading-none">
-                        {item.name}
+                        {item.nr ? `${item.nr}. ` : ''}{item.navn}
                       </span>
                       <span className="text-[11px] font-medium text-slate-400 italic max-w-xs truncate">
-                        {item.description}
+                        {item.beskrivelse}
                       </span>
                     </div>
                   </td>
                   <td className="px-6 py-7">
                     <span className="text-[10px] font-black uppercase bg-slate-100 px-3 py-1.5 rounded-xl text-slate-500 tracking-widest italic">
-                      {item.category}
+                      {item.kategori ?? '—'}
                     </span>
                   </td>
                   <td className="px-6 py-7">
                     <div className="flex items-center gap-3 leading-none">
                       <button
-                        onClick={() => toggleStatus(item.id, item.is_active)}
-                        className={`transition-all hover:scale-110 ${item.is_active ? 'text-green-500' : 'text-slate-300'}`}
+                        onClick={() => toggleStatus(item.id, item.tilgaengelig)}
+                        className={`transition-all hover:scale-110 ${item.tilgaengelig ? 'text-green-500' : 'text-slate-300'}`}
                       >
-                        {item.is_active
+                        {item.tilgaengelig
                           ? <ToggleRight size={44} strokeWidth={1.2} />
                           : <ToggleLeft size={44} strokeWidth={1.2} />}
                       </button>
                       <span className="text-[10px] font-black uppercase italic text-slate-600 tracking-widest">
-                        {item.is_active ? 'Aktiv' : 'Inaktiv'}
+                        {item.tilgaengelig ? 'Aktiv' : 'Inaktiv'}
                       </span>
                     </div>
                   </td>
                   <td className="px-6 py-7 text-right">
                     <span className="text-lg font-black italic text-[#cc5533] leading-none">
-                      {item.price} kr.
+                      {item.pris} kr.
                     </span>
                   </td>
                   <td className="px-10 py-7 text-right">
@@ -282,7 +291,7 @@ export default function MenuPage() {
             <div className="py-24 text-center">
               <UtensilsCrossed size={48} className="mx-auto mb-4 text-slate-200" />
               <p className="text-slate-300 font-black uppercase italic tracking-[0.3em] text-xs">
-                {menuItems.length === 0 ? 'Ingen retter tilføjet endnu...' : 'Ingen retter fundet...'}
+                {menuItems.length === 0 ? 'Ingen retter tilføjet endnu...' : 'Ingen retter matcher søgningen...'}
               </p>
             </div>
           )}
