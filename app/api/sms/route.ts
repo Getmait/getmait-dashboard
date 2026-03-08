@@ -39,13 +39,55 @@ export async function POST(req: NextRequest) {
   // Hent SMS-tilmeldte kunder
   const { data: customers } = await supabase
     .from('customers')
-    .select('name, phone')
+    .select('name, phone, last_order_at')
     .eq('tenant_id', tenant_id)
     .eq('opted_in_sms', true)
 
   if (!customers || customers.length === 0) {
     return NextResponse.json({ error: 'Ingen SMS-tilmeldte kunder' }, { status: 400 })
   }
+
+  // Hent ordrer til yndlingspizza-beregning
+  const { data: ordrer } = await supabase
+    .from('ordrer')
+    .select('kunde_tlf, ordre_detaljer')
+    .eq('store_id', tenant.store_id)
+
+  // Byg yndlingspizza-map per telefonnummer
+  const yndlingMap: Record<string, string> = {}
+  if (ordrer) {
+    const itemCounts: Record<string, Record<string, number>> = {}
+    ordrer.forEach(o => {
+      try {
+        const items = JSON.parse(o.ordre_detaljer)
+        if (Array.isArray(items) && o.kunde_tlf) {
+          if (!itemCounts[o.kunde_tlf]) itemCounts[o.kunde_tlf] = {}
+          items.forEach((i: { navn?: string; antal?: number }) => {
+            const navn = i.navn ?? '?'
+            itemCounts[o.kunde_tlf][navn] = (itemCounts[o.kunde_tlf][navn] ?? 0) + (i.antal ?? 1)
+          })
+        }
+      } catch { /* skip invalid JSON */ }
+    })
+    Object.entries(itemCounts).forEach(([phone, counts]) => {
+      const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]
+      if (top) yndlingMap[phone] = top[0]
+    })
+  }
+
+  // Berig modtagere med personaliserings-data
+  const now = new Date()
+  const recipients = customers.map(c => {
+    const dageSiden = c.last_order_at
+      ? Math.round((now.getTime() - new Date(c.last_order_at).getTime()) / (1000 * 60 * 60 * 24))
+      : null
+    return {
+      name: c.name,
+      phone: c.phone,
+      yndlingspizza: yndlingMap[c.phone] ?? null,
+      dage_siden: dageSiden,
+    }
+  })
 
   // Gem kampagne i DB
   const { data: campaign } = await supabase
@@ -66,7 +108,7 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       message: message.trim(),
       from_number: fromNumber,
-      recipients: customers,
+      recipients,
       campaign_id: campaign?.id ?? null,
     }),
   })

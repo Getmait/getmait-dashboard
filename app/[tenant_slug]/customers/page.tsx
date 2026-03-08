@@ -150,14 +150,18 @@ export default function KundeklubPage() {
                   onChange={(e) => setSmsText(e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-2xl p-5 text-sm font-medium focus:ring-4 focus:ring-[#ea580c]/5 outline-none transition-all shadow-inner text-slate-700 leading-relaxed italic resize-none"
                 />
-                <div className="flex gap-2 mt-4">
-                  {['Navn'].map((tag) => (
+                <div className="flex gap-2 mt-4 flex-wrap">
+                  {[
+                    { tag: 'Navn', label: 'Navn' },
+                    { tag: 'Yndlingspizza', label: 'Yndlingspizza' },
+                    { tag: 'DageSiden', label: 'Dage siden sidst' },
+                  ].map(({ tag, label }) => (
                     <button
                       key={tag}
                       onClick={() => setSmsText((t) => t + ` {{${tag}}}`)}
                       className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black text-slate-400 uppercase hover:border-[#ea580c] hover:text-[#ea580c] transition-all leading-none"
                     >
-                      + {tag}
+                      + {label}
                     </button>
                   ))}
                 </div>
