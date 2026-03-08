@@ -39,9 +39,7 @@ export default function KundeklubPage() {
 
   const [campaigns, setCampaigns] = useState<SmsCampaign[]>([])
   const [smsText, setSmsText] = useState(
-    'Hey {{Navn}}, god fodboldkamp i aften. Skal jeg have din yndlingsret klar inden kampstart? Fordi du er en god stamkunde får du 10% rabat. Hilsen fra ' +
-      (tenant?.name ?? 'os') +
-      '. Besvar blot med Ja.'
+    'Hej {{Navn}}. Som medlem af vores kundeklub giver vi dig 10% rabat på din næste bestilling. Svar JA og vi klargør din ordre.'
   )
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
