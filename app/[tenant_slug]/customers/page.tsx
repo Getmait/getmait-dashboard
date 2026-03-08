@@ -20,9 +20,9 @@ import { format } from 'date-fns'
 import { da } from 'date-fns/locale'
 import type { SmsCampaign, Customer } from '@/lib/types'
 
-function getCustomerStatus(orderCount: number, lastOrderAt: string | null): 'Stamkunde' | 'Aktiv' | 'Inaktiv' {
-  const isInactive = !lastOrderAt || (Date.now() - new Date(lastOrderAt).getTime()) > 60 * 24 * 60 * 60 * 1000
-  if (isInactive) return 'Inaktiv'
+function getCustomerStatus(orderCount: number, lastOrderAt: string | null): 'Stamkunde' | 'Aktiv' | 'Inaktiv' | 'Ny' {
+  if (!lastOrderAt) return 'Ny'
+  if ((Date.now() - new Date(lastOrderAt).getTime()) > 60 * 24 * 60 * 60 * 1000) return 'Inaktiv'
   if (orderCount >= 8) return 'Stamkunde'
   return 'Aktiv'
 }
@@ -408,6 +408,8 @@ export default function KundeklubPage() {
                                   ? 'bg-orange-100 text-[#ea580c]'
                                   : status === 'Aktiv'
                                   ? 'bg-green-50 text-green-600'
+                                  : status === 'Ny'
+                                  ? 'bg-blue-50 text-blue-500'
                                   : 'bg-slate-100 text-slate-400'
                               }`}
                             >
@@ -506,8 +508,8 @@ export default function KundeklubPage() {
               </h4>
             </div>
             <p className="text-[13px] font-bold italic text-slate-600 leading-relaxed">
-              {customers.filter((c) => getCustomerStatus(c.order_count, c.last_order_at) === 'Inaktiv').length > 0
-                ? `Du har ${customers.filter((c) => getCustomerStatus(c.order_count, c.last_order_at) === 'Inaktiv').length} inaktive kunder. Skal jeg sende dem et "Savner dig"-tilbud?`
+              {customers.filter((c) => ['Inaktiv', 'Ny'].includes(getCustomerStatus(c.order_count, c.last_order_at))).length > 0
+                ? `Du har ${customers.filter((c) => ['Inaktiv', 'Ny'].includes(getCustomerStatus(c.order_count, c.last_order_at))).length} inaktive eller nye kunder. Skal jeg sende dem et tilbud?`
                 : 'Dine kunder er aktive. Overvej en kampagne for at booste omsætningen i weekenden.'}
             </p>
             <button
