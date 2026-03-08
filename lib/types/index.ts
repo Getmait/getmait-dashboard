@@ -91,6 +91,7 @@ export interface Customer {
   tenant_id: string
   name: string
   phone: string
+  address: string | null
   order_count: number
   last_order_at: string | null
   opted_in_sms: boolean

@@ -250,6 +250,7 @@ export default function KundeklubPage() {
                   <tr className="bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-[0.2em] italic border-b border-slate-100">
                     <th className="px-8 py-5 text-[#cc5533]">Navn / Status</th>
                     <th className="px-6 py-5">Tlf. nummer</th>
+                    <th className="px-6 py-5">Leveringsadresse</th>
                     <th className="px-6 py-5">Bestillinger</th>
                     <th className="px-8 py-5 text-right">Sidst aktiv</th>
                   </tr>
@@ -286,6 +287,9 @@ export default function KundeklubPage() {
                         </td>
                         <td className="px-6 py-5 text-slate-500 font-bold italic text-sm leading-none">
                           {customer.phone}
+                        </td>
+                        <td className="px-6 py-5 text-slate-400 italic text-[11px] leading-none max-w-[180px] truncate">
+                          {customer.address ?? <span className="text-slate-200">—</span>}
                         </td>
                         <td className="px-6 py-5 font-black italic text-slate-800 leading-none">
                           {customer.order_count}
