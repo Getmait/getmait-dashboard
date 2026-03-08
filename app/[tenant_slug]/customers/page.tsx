@@ -78,17 +78,20 @@ export default function KundeklubPage() {
   async function handleSend() {
     if (!smsText.trim() || !tenant?.id || smsRecipients.length === 0) return
     setSending(true)
-    const supabase = createClient()
-    await supabase.from('sms_campaigns').insert({
-      tenant_id: tenant.id,
-      message: smsText.trim(),
-      sent_to_count: smsRecipients.length,
-      sent_at: new Date().toISOString(),
+    const res = await fetch('/api/sms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tenant_id: tenant.id, message: smsText.trim() }),
     })
     setSending(false)
-    setSent(true)
-    fetchCampaigns()
-    setTimeout(() => setSent(false), 3000)
+    if (res.ok) {
+      setSent(true)
+      fetchCampaigns()
+      setTimeout(() => setSent(false), 3000)
+    } else {
+      const err = await res.json()
+      alert(err.error ?? 'SMS-udsendelse fejlede')
+    }
   }
 
   const filtered = customers.filter(
