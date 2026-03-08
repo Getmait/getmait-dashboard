@@ -19,6 +19,7 @@ import {
   RotateCcw,
   LogOut,
   UtensilsCrossed,
+  PhoneCall,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -28,8 +29,8 @@ const navItems = (slug: string) => [
   { href: `/${slug}/dashboard`, label: 'Overblik', icon: LayoutDashboard },
   { href: `/${slug}/orders`, label: 'Bestillinger', icon: ShoppingBag },
   { href: `/${slug}/menu`, label: 'Menu', icon: Pizza },
+  { href: `/${slug}/voice`, label: 'Voice & Opkald', icon: PhoneCall },
   { href: `/${slug}/customers`, label: 'Kundeklub', icon: Users },
-  { href: `/${slug}/sms`, label: 'SMS', icon: MessageSquare },
   { href: `/${slug}/settings`, label: 'Indstillinger', icon: Settings },
 ]
 
