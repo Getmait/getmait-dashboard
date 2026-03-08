@@ -94,12 +94,12 @@ export function Sidebar({ tenant }: SidebarProps) {
 
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-5 py-5 border-b border-slate-100 shrink-0">
-        <div className="w-9 h-9 rounded-xl bg-[#cc5533] flex items-center justify-center shadow-lg shadow-orange-100 rotate-2">
+        <div className="w-9 h-9 rounded-xl bg-[#ea580c] flex items-center justify-center shadow-lg shadow-orange-100 rotate-2">
           <Zap size={18} className="text-white fill-white" />
         </div>
         <div>
           <span className="text-base font-black tracking-tighter uppercase italic text-slate-800 block leading-none">GetMait</span>
-          <span className="text-[8px] font-black text-[#cc5533] uppercase tracking-widest">Partner Portal</span>
+          <span className="text-[8px] font-black text-[#ea580c] uppercase tracking-widest">Partner Portal</span>
         </div>
       </div>
 
@@ -120,7 +120,7 @@ export function Sidebar({ tenant }: SidebarProps) {
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-black uppercase italic tracking-wide transition-all',
                 active
-                  ? 'bg-[#cc5533]/10 text-[#cc5533] border border-[#cc5533]/10'
+                  ? 'bg-[#ea580c]/10 text-[#ea580c] border border-[#ea580c]/10'
                   : 'text-slate-400 hover:bg-slate-50 hover:text-[#1a1a2e]'
               )}
             >
@@ -137,7 +137,7 @@ export function Sidebar({ tenant }: SidebarProps) {
         {/* Live Ventetid */}
         <div className="bg-white border border-slate-200 rounded-[1.5rem] p-4 shadow-sm">
           <div className="flex items-center gap-1.5 mb-3">
-            <Clock size={12} className="text-[#cc5533]" />
+            <Clock size={12} className="text-[#ea580c]" />
             <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 italic">Live Ventetid</span>
           </div>
           <div className="flex items-center justify-between mb-3">
@@ -146,7 +146,7 @@ export function Sidebar({ tenant }: SidebarProps) {
             </div>
             <button
               onClick={resetTimes}
-              className="p-1.5 text-slate-300 hover:text-[#cc5533] transition-colors"
+              className="p-1.5 text-slate-300 hover:text-[#ea580c] transition-colors"
               title="Nulstil"
             >
               <RotateCcw size={13} />
@@ -154,7 +154,7 @@ export function Sidebar({ tenant }: SidebarProps) {
           </div>
           <button
             onClick={addStressTime}
-            className="w-full bg-orange-50 hover:bg-orange-100 text-[#cc5533] py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 group"
+            className="w-full bg-orange-50 hover:bg-orange-100 text-[#ea580c] py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 group"
           >
             <AlertTriangle size={11} className="group-hover:animate-bounce" />
             <span className="text-[9px] font-black uppercase tracking-widest italic">+10 Min Stress</span>
@@ -224,7 +224,7 @@ export function Sidebar({ tenant }: SidebarProps) {
                   setIsOnline(next)
                   save({ is_online: next })
                 }}
-                className={`transition-all ${isOnline ? 'text-[#cc5533]' : 'text-slate-300'}`}
+                className={`transition-all ${isOnline ? 'text-[#ea580c]' : 'text-slate-300'}`}
               >
                 {isOnline
                   ? <ToggleRight size={28} strokeWidth={1.5} />

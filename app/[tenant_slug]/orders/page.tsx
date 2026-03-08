@@ -123,7 +123,7 @@ export default async function OrdersPage({
             className="bg-white p-7 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-xl transition-all group"
           >
             <div className="flex justify-between items-start mb-6">
-              <div className="p-3.5 bg-slate-50 rounded-2xl text-slate-400 group-hover:text-[#cc5533] transition-all">
+              <div className="p-3.5 bg-slate-50 rounded-2xl text-slate-400 group-hover:text-[#ea580c] transition-all">
                 <stat.icon size={22} />
               </div>
             </div>
@@ -191,7 +191,7 @@ export default async function OrdersPage({
                   <tr key={order.id} className="hover:bg-slate-50/50 transition-colors group">
                     <td className="px-8 py-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-[#cc5533] transition-colors shrink-0">
+                        <div className="w-9 h-9 bg-slate-100 rounded-xl flex items-center justify-center text-slate-300 group-hover:text-[#ea580c] transition-colors shrink-0">
                           <User size={18} />
                         </div>
                         <div className="flex flex-col gap-0.5">
@@ -228,7 +228,7 @@ export default async function OrdersPage({
                       </span>
                     </td>
                     <td className="px-6 py-5 text-right">
-                      <span className="text-sm font-black italic text-[#cc5533] leading-none">
+                      <span className="text-sm font-black italic text-[#ea580c] leading-none">
                         {order.total_pris
                           ? `${Number(order.total_pris).toLocaleString('da-DK')} kr.`
                           : '—'}
@@ -249,7 +249,7 @@ export default async function OrdersPage({
 
       {/* FOOTER */}
       <div className="bg-slate-900 rounded-[3rem] p-8 text-white flex items-center gap-6 shadow-xl relative overflow-hidden">
-        <div className="bg-[#cc5533] p-4 rounded-2xl shadow-lg shrink-0">
+        <div className="bg-[#ea580c] p-4 rounded-2xl shadow-lg shrink-0">
           <CheckCircle2 size={24} className="text-white" />
         </div>
         <div>

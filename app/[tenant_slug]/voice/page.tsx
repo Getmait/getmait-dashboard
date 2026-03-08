@@ -6,7 +6,6 @@ import {
   Activity,
   AlertCircle,
   Mic2,
-  Filter,
   Volume2,
   Headphones,
   TrendingUp,
@@ -75,29 +74,25 @@ export default async function VoicePage({
       label: 'Besvarede Opkald',
       value: String(besvarede),
       icon: PhoneCall,
-      change: `+${Math.round(besvarede * 0.12)}`,
-      highlight: false,
+      sub: 'Via Mait AI',
     },
     {
       label: 'Sparet Tid (Tlf)',
       value: `${timerSparet} t.`,
       icon: Clock,
-      change: `+${Math.round(timerSparet * 0.17)}t`,
-      highlight: false,
+      sub: 'Ca. 3 min/opkald',
     },
     {
       label: 'Automationsgrad',
       value: `${automationsgrad}%`,
       icon: Activity,
-      change: '+4%',
-      highlight: false,
+      sub: 'Bestillinger klaret af AI',
     },
     {
       label: 'Missede Opkald',
-      value: '0',
+      value: '—',
       icon: AlertCircle,
-      change: '0',
-      highlight: true,
+      sub: 'Ikke målt endnu',
     },
   ]
 
@@ -133,12 +128,9 @@ export default async function VoicePage({
             className="bg-white p-6 rounded-[1.5rem] shadow-sm border border-slate-100 group transition-all hover:shadow-xl"
           >
             <div className="flex justify-between items-start mb-4">
-              <div className="p-3 rounded-xl bg-slate-50 text-slate-400 group-hover:text-[#cc5533] transition-colors">
+              <div className="p-3 rounded-xl bg-slate-50 text-slate-400 group-hover:text-[#ea580c] transition-colors">
                 <stat.icon size={20} />
               </div>
-              <span className={`text-[9px] font-black px-2 py-0.5 rounded-md leading-none ${stat.highlight ? 'bg-slate-100 text-slate-400' : 'bg-green-50 text-green-600'}`}>
-                {stat.change}
-              </span>
             </div>
             <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1 leading-none">
               {stat.label}
@@ -146,6 +138,9 @@ export default async function VoicePage({
             <h3 className="text-3xl font-black text-slate-900 italic tracking-tight leading-none">
               {stat.value}
             </h3>
+            <p className="text-[9px] font-bold text-slate-300 uppercase italic leading-none mt-1">
+              {stat.sub}
+            </p>
           </div>
         ))}
       </div>
@@ -165,16 +160,13 @@ export default async function VoicePage({
                   <p className="text-[9px] font-bold text-slate-300 uppercase italic leading-none">Opdateres i realtid</p>
                 </div>
               </div>
-              <button className="p-2.5 text-slate-400 hover:text-slate-600 bg-slate-50 rounded-xl transition-all border border-slate-100">
-                <Filter size={16} />
-              </button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-slate-50 text-slate-400 text-[8px] font-black uppercase tracking-[0.2em] italic border-b border-slate-100">
                     <th className="px-8 py-5">Kunde / Type</th>
-                    <th className="px-6 py-5">AI Samtale-Resumé</th>
+                    <th className="px-6 py-5">Bestilling / Info</th>
                     <th className="px-6 py-5">Status</th>
                     <th className="px-8 py-5 text-right">Tidspunkt</th>
                   </tr>
@@ -260,7 +252,7 @@ export default async function VoicePage({
           {/* FRIGJORTE HÆNDER */}
           <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm overflow-hidden relative group">
             <div className="flex items-center gap-3 mb-6">
-              <div className="bg-orange-50 p-2.5 rounded-xl text-[#cc5533]">
+              <div className="bg-orange-50 p-2.5 rounded-xl text-[#ea580c]">
                 <Clock size={18} />
               </div>
               <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-800 leading-none">
@@ -292,7 +284,7 @@ export default async function VoicePage({
       {/* FOOTER */}
       <div className="bg-slate-900 rounded-[3rem] p-8 text-white flex items-center justify-between shadow-xl relative overflow-hidden">
         <div className="relative z-10 flex items-center gap-6">
-          <div className="bg-[#cc5533] p-4 rounded-2xl shadow-lg">
+          <div className="bg-[#ea580c] p-4 rounded-2xl shadow-lg">
             <CheckCircle2 size={24} className="text-white" />
           </div>
           <div>
