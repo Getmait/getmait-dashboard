@@ -351,7 +351,14 @@ export default function KundeklubPage() {
                 : 'Dine kunder er aktive. Overvej en kampagne for at booste omsætningen i weekenden.'}
             </p>
             <button
-              onClick={() => document.querySelector('textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+              onClick={() => {
+                const inaktive = customers.filter((c) => getCustomerStatus(c.order_count) === 'Inaktiv').length
+                if (inaktive > 0) {
+                  setSmsText(`Hej {{Navn}}! Det er længe siden vi har set dig. Som tak for din loyalitet giver vi dig 15% rabat på din næste bestilling i aften. Svar JA for at bestille.`)
+                }
+                document.querySelector('textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                document.querySelector('textarea')?.focus()
+              }}
               className="mt-5 text-[10px] font-black uppercase tracking-widest text-[#ea580c] underline decoration-2 underline-offset-8 hover:text-orange-700 transition-all leading-none block"
             >
               Opret kampagne
