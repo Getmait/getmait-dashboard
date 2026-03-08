@@ -27,18 +27,23 @@ function parseOrdreDetaljer(raw: string): string {
 
 function getStatusStyle(status: string) {
   switch (status) {
+    case 'ny':
+    case 'pending':
+      return { label: 'Ny', color: 'bg-orange-100 text-[#ea580c]' }
     case 'modtaget':
-      return { label: 'Modtaget', color: 'bg-green-100 text-green-700' }
+    case 'confirmed':
     case 'bekraeftet':
     case 'bekræftet':
-      return { label: 'Bekræftet', color: 'bg-blue-100 text-blue-700' }
+    case 'afventer_betaling':
+      return { label: 'Modtaget', color: 'bg-green-100 text-green-700' }
+    case 'completed':
     case 'afhentet':
     case 'afsluttet':
       return { label: 'Afsluttet', color: 'bg-slate-100 text-slate-500' }
     case 'annulleret':
       return { label: 'Annulleret', color: 'bg-red-100 text-red-600' }
     default:
-      return { label: status, color: 'bg-slate-100 text-slate-400' }
+      return { label: 'Modtaget', color: 'bg-green-100 text-green-700' }
   }
 }
 
