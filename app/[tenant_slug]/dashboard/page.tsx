@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Sparkles,
   Users,
+  Smartphone,
 } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -34,13 +35,21 @@ export default async function DashboardPage({
 
   const storeId = tenant.store_id
 
-  const { data: ordrer } = await supabase
-    .from('ordrer')
-    .select('*')
-    .eq('store_id', storeId)
-    .order('oprettet_at', { ascending: false })
+  const [{ data: ordrer }, { data: customerData }] = await Promise.all([
+    supabase
+      .from('ordrer')
+      .select('*')
+      .eq('store_id', storeId)
+      .order('oprettet_at', { ascending: false }),
+    supabase
+      .from('customers')
+      .select('opted_in_sms')
+      .eq('tenant_id', tenant.id),
+  ])
 
   const alle = (ordrer ?? []) as Ordrer[]
+  const alleKunder = customerData ?? []
+  const smsKunder = alleKunder.filter(c => c.opted_in_sms).length
 
   const now = new Date()
   const maanedStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
@@ -48,7 +57,7 @@ export default async function DashboardPage({
 
   const omsaetning = maanedOrdrer.reduce((sum, o) => sum + Number(o.total_pris ?? 0), 0)
   const antalOrdrer = maanedOrdrer.length
-  const timerSparet = Math.round((alle.length * 3) / 60)
+  const gnsOrdreVaerdi = antalOrdrer > 0 ? Math.round(omsaetning / antalOrdrer) : 0
 
   const forrigeMaanedStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString()
   const forrigeMaanedSlut = new Date(now.getFullYear(), now.getMonth(), 0).toISOString()
@@ -64,6 +73,30 @@ export default async function DashboardPage({
   const fuldfoert = alle.filter(o => Number(o.total_pris ?? 0) > 0).length
   const konvertering = alle.length > 0 ? Math.round((fuldfoert / alle.length) * 100) : 0
 
+  const leveringAntal = alle.filter(o => o.levering).length
+  const leveringPct = alle.length > 0 ? Math.round((leveringAntal / alle.length) * 100) : 0
+
+  // Mest bestilte vare denne måned
+  const itemCounts: Record<string, number> = {}
+  maanedOrdrer.forEach(o => {
+    try {
+      const items = JSON.parse(o.ordre_detaljer)
+      if (Array.isArray(items)) {
+        items.forEach((i: { navn?: string; antal?: number }) => {
+          const navn = i.navn ?? '?'
+          itemCounts[navn] = (itemCounts[navn] ?? 0) + (i.antal ?? 1)
+        })
+      }
+    } catch { /* ikke JSON */ }
+  })
+  const topItem = Object.entries(itemCounts).sort((a, b) => b[1] - a[1])[0]
+
+  const aiIndsigt = topItem
+    ? `Din bedst sælgende ret denne måned er ${topItem[0]} (${topItem[1]} stk.). ${leveringPct}% af dine kunder vælger levering.`
+    : alle.length > 0
+    ? `Du har modtaget ${alle.length} ordrer i alt. ${leveringPct}% vælger levering. Tilføj kampagner via kundeklubben for at øge omsætningen.`
+    : 'Ingen bestillinger endnu. Når de første ordrer kommer ind, viser Mait dig mønstre og indsigter her.'
+
   const seneste = alle.slice(0, 5)
 
   function parseOrdreDetaljer(raw: string): string {
@@ -71,9 +104,7 @@ export default async function DashboardPage({
       const items = JSON.parse(raw)
       if (Array.isArray(items)) {
         return items
-          .map((i: { antal?: number; navn?: string; pris?: number }) =>
-            `${i.antal ?? 1}x ${i.navn ?? '?'}`
-          )
+          .map((i: { antal?: number; navn?: string }) => `${i.antal ?? 1}x ${i.navn ?? '?'}`)
           .join(', ')
       }
     } catch { /* ikke JSON */ }
@@ -86,7 +117,7 @@ export default async function DashboardPage({
       value: `${omsaetning.toLocaleString('da-DK')} kr.`,
       change: omsaetningChange,
       icon: Coins,
-      description: 'Bestillinger på autopilot',
+      description: 'Bestillinger denne måned',
     },
     {
       label: 'Ordrer denne måned',
@@ -96,18 +127,18 @@ export default async function DashboardPage({
       description: 'Håndteret af Mait',
     },
     {
-      label: 'Arbejdskraft sparet',
-      value: `${timerSparet} timer`,
-      change: `${alle.length * 3} min`,
+      label: 'Gns. ordreværdi',
+      value: gnsOrdreVaerdi > 0 ? `${gnsOrdreVaerdi} kr.` : '—',
+      change: `${antalOrdrer} ordrer`,
       icon: Clock,
-      description: 'Frigjort fra telefonen',
+      description: 'Denne måned',
     },
     {
-      label: 'Automationsgrad',
-      value: alle.length > 0 ? '94%' : '—',
-      change: '+2%',
-      icon: Zap,
-      description: 'Håndteret uden hjælp',
+      label: 'Kundeklub',
+      value: String(smsKunder),
+      change: `${alleKunder.length} kunder`,
+      icon: Smartphone,
+      description: 'SMS-tilmeldte',
     },
   ]
 
@@ -122,7 +153,7 @@ export default async function DashboardPage({
             className="bg-white p-7 rounded-[2.5rem] shadow-sm border border-slate-100 hover:shadow-xl transition-all group"
           >
             <div className="flex justify-between items-start mb-6">
-              <div className="p-3.5 bg-slate-50 rounded-2xl text-slate-400 group-hover:text-[#cc5533] transition-all">
+              <div className="p-3.5 bg-slate-50 rounded-2xl text-slate-400 group-hover:text-[#ea580c] transition-all">
                 <stat.icon size={22} />
               </div>
               <span className="text-[10px] font-black px-2.5 py-1 rounded-lg bg-green-50 text-green-600 border border-green-100">
@@ -147,34 +178,38 @@ export default async function DashboardPage({
 
         <div className="lg:col-span-2 space-y-8">
 
-          {/* PROFIT CENTER */}
-          <section className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-sm relative overflow-hidden">
-            <div className="flex items-center gap-3 mb-10">
-              <div className="bg-[#cc5533] p-3 rounded-2xl text-white shadow-lg shadow-orange-100">
-                <Zap size={24} fill="white" />
-              </div>
-              <h2 className="text-xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">
-                Profit Center
-              </h2>
-            </div>
-            <div className="space-y-4">
-              <div className="p-6 rounded-[2rem] border border-orange-50 bg-white border-l-4 border-l-[#cc5533] shadow-sm flex flex-col md:flex-row justify-between items-center gap-6">
-                <div className="flex gap-5">
-                  <div className="p-3.5 rounded-2xl h-fit bg-green-50 text-green-600">
-                    <TrendingUp size={24} />
-                  </div>
-                  <div>
-                    <h4 className="font-black text-base uppercase italic mb-1 tracking-tight text-slate-800 leading-none">
-                      Mersalg: Sodavand
-                    </h4>
-                    <p className="text-xs text-slate-500 font-medium italic leading-relaxed max-w-sm">
-                      80% bestiller kun pizza. Mait kan tilbyde 1.5L sodavand automatisk og øge din gennemsnitsordre.
-                    </p>
-                  </div>
+          {/* KUNDEKLUB STATUS */}
+          <section className="bg-white rounded-[3rem] p-10 border border-slate-100 shadow-sm">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="bg-[#ea580c] p-3 rounded-2xl text-white shadow-lg shadow-orange-100">
+                  <Smartphone size={22} />
                 </div>
-                <button className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest italic hover:bg-[#cc5533] transition-all whitespace-nowrap leading-none shadow-lg">
-                  Aktiver Mersalg
-                </button>
+                <h2 className="text-xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">
+                  Kundeklub
+                </h2>
+              </div>
+              <Link
+                href={`/${tenant_slug}/customers`}
+                className="text-[10px] font-black text-slate-400 hover:text-[#ea580c] uppercase tracking-widest transition-all flex items-center gap-2 leading-none"
+              >
+                Se alle <ExternalLink size={12} />
+              </Link>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-6 rounded-[2rem] bg-slate-50 border border-slate-100 text-center">
+                <p className="text-3xl font-black italic text-slate-900 leading-none mb-2">{alleKunder.length}</p>
+                <p className="text-[9px] font-black uppercase text-slate-400 leading-none">Kunder i alt</p>
+              </div>
+              <div className="p-6 rounded-[2rem] bg-orange-50 border border-orange-100 text-center">
+                <p className="text-3xl font-black italic text-[#ea580c] leading-none mb-2">{smsKunder}</p>
+                <p className="text-[9px] font-black uppercase text-slate-400 leading-none">SMS-tilmeldte</p>
+              </div>
+              <div className="p-6 rounded-[2rem] bg-slate-50 border border-slate-100 text-center">
+                <p className="text-3xl font-black italic text-slate-900 leading-none mb-2">
+                  {alleKunder.length > 0 ? Math.round((smsKunder / alleKunder.length) * 100) : 0}%
+                </p>
+                <p className="text-[9px] font-black uppercase text-slate-400 leading-none">Tilmeldingsrate</p>
               </div>
             </div>
           </section>
@@ -187,12 +222,12 @@ export default async function DashboardPage({
                   <Clock size={22} />
                 </div>
                 <h2 className="text-xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">
-                  Seneste Bestillinger fra Mait
+                  Seneste Bestillinger
                 </h2>
               </div>
               <Link
                 href={`/${tenant_slug}/orders`}
-                className="text-[10px] font-black text-slate-400 hover:text-[#cc5533] uppercase tracking-widest transition-all flex items-center gap-2 leading-none"
+                className="text-[10px] font-black text-slate-400 hover:text-[#ea580c] uppercase tracking-widest transition-all flex items-center gap-2 leading-none"
               >
                 Vis alle <ExternalLink size={12} />
               </Link>
@@ -220,7 +255,7 @@ export default async function DashboardPage({
                     className="flex items-center justify-between p-5 rounded-[1.5rem] bg-slate-50 border border-slate-100 hover:bg-white hover:border-orange-100 transition-all group"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-slate-100 shadow-sm text-slate-300 group-hover:text-[#cc5533] transition-colors">
+                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-slate-100 shadow-sm text-slate-300 group-hover:text-[#ea580c] transition-colors">
                         <User size={20} />
                       </div>
                       <div className="leading-none">
@@ -239,7 +274,7 @@ export default async function DashboardPage({
                     </div>
                     <div className="flex items-center gap-8 text-right shrink-0">
                       <div className="text-right leading-none">
-                        <p className="font-black text-sm italic leading-none mb-1 text-[#cc5533]">
+                        <p className="font-black text-sm italic leading-none mb-1 text-[#ea580c]">
                           {order.total_pris
                             ? `${Number(order.total_pris).toLocaleString('da-DK')} kr.`
                             : '—'}
@@ -267,26 +302,23 @@ export default async function DashboardPage({
             <div className="relative z-10">
               <Sparkles className="text-orange-500 mb-6" size={32} />
               <h3 className="text-3xl font-black italic uppercase tracking-tighter leading-none mb-4">
-                Mait AI Indsigt
+                Mait Indsigt
               </h3>
               <p className="text-slate-400 text-sm font-medium italic leading-relaxed">
-                &ldquo;Dine kunder bestiller 24% oftere tilbehør, når jeg foreslår det efter en pizza-bestilling. Skal vi aktivere flere mersalgs-regler?&rdquo;
+                &ldquo;{aiIndsigt}&rdquo;
               </p>
             </div>
             <div className="relative z-10 space-y-4 mt-12">
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                  <p className="text-2xl font-black italic text-orange-500 leading-none">{timerSparet}t</p>
-                  <p className="text-[9px] font-black uppercase text-slate-500 mt-1 leading-none">Tid sparet</p>
-                </div>
-                <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
                   <p className="text-2xl font-black italic text-orange-500 leading-none">{alle.length}</p>
                   <p className="text-[9px] font-black uppercase text-slate-500 mt-1 leading-none">Ordrer i alt</p>
                 </div>
+                <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                  <p className="text-2xl font-black italic text-orange-500 leading-none">{leveringPct}%</p>
+                  <p className="text-[9px] font-black uppercase text-slate-500 mt-1 leading-none">Vælger levering</p>
+                </div>
               </div>
-              <button className="w-full bg-white/10 hover:bg-white/20 transition-all py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest border border-white/10 italic leading-none text-center">
-                Se Ugerapport
-              </button>
             </div>
             <Users className="absolute -bottom-10 -right-10 text-white/5 w-64 h-64 -rotate-12 pointer-events-none" />
           </div>
@@ -294,7 +326,7 @@ export default async function DashboardPage({
           {/* AI LIVE STATUS */}
           <div className="bg-white rounded-[2.5rem] p-8 border border-slate-100 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
-              <ShieldCheck size={18} className="text-[#cc5533]" />
+              <ShieldCheck size={18} className="text-[#ea580c]" />
               <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 leading-none">
                 AI Live Status
               </h4>
@@ -302,19 +334,19 @@ export default async function DashboardPage({
             <div className="space-y-5">
               <div className="flex justify-between items-end leading-none">
                 <div className="leading-none">
-                  <span className="text-[9px] font-black text-slate-400 uppercase block mb-1 leading-none">Gns. Samtaletid</span>
-                  <span className="text-base font-black italic text-slate-900 leading-none">1:24 min</span>
-                </div>
-                <span className="text-[9px] font-bold text-green-500 uppercase leading-none">-12s</span>
-              </div>
-              <div className="flex justify-between items-end leading-none">
-                <div className="leading-none">
                   <span className="text-[9px] font-black text-slate-400 uppercase block mb-1 leading-none">Konvertering</span>
-                  <span className="text-base font-black italic text-[#cc5533] leading-none">{konvertering}%</span>
+                  <span className="text-base font-black italic text-[#ea580c] leading-none">{konvertering}%</span>
                 </div>
                 <span className="text-[9px] font-bold text-orange-500 uppercase leading-none">
                   {konvertering >= 80 ? 'Høj' : konvertering >= 50 ? 'Middel' : 'Lav'}
                 </span>
+              </div>
+              <div className="flex justify-between items-end leading-none">
+                <div className="leading-none">
+                  <span className="text-[9px] font-black text-slate-400 uppercase block mb-1 leading-none">Levering</span>
+                  <span className="text-base font-black italic text-slate-900 leading-none">{leveringAntal} ordrer</span>
+                </div>
+                <span className="text-[9px] font-bold text-slate-400 uppercase leading-none">{leveringPct}%</span>
               </div>
               <div className="flex justify-between items-end leading-none">
                 <div className="leading-none">
