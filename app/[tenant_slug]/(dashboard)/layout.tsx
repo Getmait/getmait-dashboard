@@ -14,7 +14,7 @@ export default async function TenantLayout({
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  if (!user) redirect(`/${tenant_slug}/login`)
 
   const { data: tenant } = await supabase
     .from('tenants')
@@ -22,7 +22,7 @@ export default async function TenantLayout({
     .eq('slug', tenant_slug)
     .single()
 
-  if (!tenant) redirect('/login')
+  if (!tenant) redirect(`/${tenant_slug}/login`)
 
   return (
     <div className="flex min-h-screen">
