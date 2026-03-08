@@ -53,8 +53,9 @@ export async function POST(req: NextRequest) {
     .select('kunde_tlf, ordre_detaljer')
     .eq('store_id', tenant.store_id)
 
-  // Byg yndlingspizza-map per telefonnummer
+  // Byg yndlingspizza-map per telefonnummer + butikkens mest populære ret som fallback
   const yndlingMap: Record<string, string> = {}
+  const storeTotals: Record<string, number> = {}
   if (ordrer) {
     const itemCounts: Record<string, Record<string, number>> = {}
     ordrer.forEach(o => {
@@ -64,7 +65,9 @@ export async function POST(req: NextRequest) {
           if (!itemCounts[o.kunde_tlf]) itemCounts[o.kunde_tlf] = {}
           items.forEach((i: { navn?: string; antal?: number }) => {
             const navn = i.navn ?? '?'
-            itemCounts[o.kunde_tlf][navn] = (itemCounts[o.kunde_tlf][navn] ?? 0) + (i.antal ?? 1)
+            const antal = i.antal ?? 1
+            itemCounts[o.kunde_tlf][navn] = (itemCounts[o.kunde_tlf][navn] ?? 0) + antal
+            storeTotals[navn] = (storeTotals[navn] ?? 0) + antal
           })
         }
       } catch { /* skip invalid JSON */ }
@@ -75,16 +78,22 @@ export async function POST(req: NextRequest) {
     })
   }
 
+  // Butikkens mest populære ret — bruges som fallback for kunder uden ordrehistorik
+  const storeTopItem = Object.entries(storeTotals).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null
+
   // Berig modtagere med personaliserings-data
   const now = new Date()
+  let fallbackCount = 0
   const recipients = customers.map(c => {
     const dageSiden = c.last_order_at
       ? Math.round((now.getTime() - new Date(c.last_order_at).getTime()) / (1000 * 60 * 60 * 24))
       : null
+    const yndlingspizza = yndlingMap[c.phone] ?? storeTopItem
+    if (!yndlingMap[c.phone] && storeTopItem) fallbackCount++
     return {
       name: c.name,
       phone: c.phone,
-      yndlingspizza: yndlingMap[c.phone] ?? null,
+      yndlingspizza,
       dage_siden: dageSiden,
     }
   })
@@ -117,5 +126,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'SMS-udsendelse fejlede', details: await n8nRes.text() }, { status: 500 })
   }
 
-  return NextResponse.json({ ok: true, sent_to: customers.length })
+  return NextResponse.json({
+    ok: true,
+    sent_to: customers.length,
+    yndlingspizza_fallback_count: fallbackCount,
+    yndlingspizza_fallback_item: storeTopItem,
+  })
 }

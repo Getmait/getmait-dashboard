@@ -39,6 +39,7 @@ export default function KundeklubPage() {
   )
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
+  const [sentFallback, setSentFallback] = useState<{ count: number; item: string } | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
 
   const smsRecipients = customers.filter((c) => c.opted_in_sms)
@@ -72,9 +73,13 @@ export default function KundeklubPage() {
     })
     setSending(false)
     if (res.ok) {
+      const data = await res.json()
       setSent(true)
       fetchCampaigns()
-      setTimeout(() => setSent(false), 3000)
+      if (data.yndlingspizza_fallback_count > 0 && data.yndlingspizza_fallback_item) {
+        setSentFallback({ count: data.yndlingspizza_fallback_count, item: data.yndlingspizza_fallback_item })
+      }
+      setTimeout(() => { setSent(false); setSentFallback(null) }, 6000)
     } else {
       const err = await res.json()
       alert(err.error ?? 'SMS-udsendelse fejlede')
@@ -166,6 +171,24 @@ export default function KundeklubPage() {
                   ))}
                 </div>
               </div>
+
+              {smsText.includes('{{Yndlingspizza}}') && (
+                <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-2xl px-5 py-3">
+                  <span className="text-amber-500 text-sm shrink-0">⚠️</span>
+                  <p className="text-[11px] font-bold text-amber-700 italic leading-relaxed">
+                    Kunder uden ordrehistorik modtager automatisk butikkens mest populære ret som yndlingspizza.
+                  </p>
+                </div>
+              )}
+
+              {sentFallback && (
+                <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-3">
+                  <span className="text-blue-500 text-sm shrink-0">ℹ️</span>
+                  <p className="text-[11px] font-bold text-blue-700 italic leading-relaxed">
+                    {sentFallback.count} kunde{sentFallback.count !== 1 ? 'r' : ''} fik &quot;{sentFallback.item}&quot; som yndlingspizza (ingen ordrehistorik).
+                  </p>
+                </div>
+              )}
 
               <div className="flex flex-col md:flex-row gap-6 justify-between items-center">
                 <div className="flex items-center gap-4">
