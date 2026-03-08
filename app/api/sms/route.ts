@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { tenant_id, message } = await req.json()
+  const { tenant_id, message, segment } = await req.json()
   if (!tenant_id || !message?.trim()) {
     return NextResponse.json({ error: 'Mangler tenant_id eller besked' }, { status: 400 })
   }
@@ -36,15 +36,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Ingen Twilio-nummer tilknyttet denne butik' }, { status: 400 })
   }
 
-  // Hent SMS-tilmeldte kunder
-  const { data: customers } = await supabase
+  // Hent SMS-tilmeldte kunder — filtrer på segment hvis angivet
+  let query = supabase
     .from('customers')
-    .select('name, phone, last_order_at')
+    .select('name, phone, last_order_at, order_count')
     .eq('tenant_id', tenant_id)
     .eq('opted_in_sms', true)
 
+  if (segment === 'inactive') {
+    query = query.eq('order_count', 0)
+  }
+
+  const { data: customers } = await query
+
   if (!customers || customers.length === 0) {
-    return NextResponse.json({ error: 'Ingen SMS-tilmeldte kunder' }, { status: 400 })
+    return NextResponse.json({ error: 'Ingen modtagere i det valgte segment' }, { status: 400 })
   }
 
   // Hent ordrer til yndlingspizza-beregning

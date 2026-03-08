@@ -40,9 +40,12 @@ export default function KundeklubPage() {
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
   const [sentFallback, setSentFallback] = useState<{ count: number; item: string } | null>(null)
+  const [segment, setSegment] = useState<'all' | 'inactive'>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
   const smsRecipients = customers.filter((c) => c.opted_in_sms)
+  const inactiveRecipients = smsRecipients.filter((c) => getCustomerStatus(c.order_count) === 'Inaktiv')
+  const activeRecipients = segment === 'inactive' ? inactiveRecipients : smsRecipients
   const totalSmsSent = campaigns.reduce((sum, c) => sum + (c.sent_to_count ?? 0), 0)
   const konverteringPct = campaigns.length > 0
     ? Math.min(Math.round((campaigns[0]?.sent_to_count ?? 0) / Math.max(smsRecipients.length, 1) * 100), 100)
@@ -64,12 +67,12 @@ export default function KundeklubPage() {
   }, [fetchCampaigns])
 
   async function handleSend() {
-    if (!smsText.trim() || !tenant?.id || smsRecipients.length === 0) return
+    if (!smsText.trim() || !tenant?.id || activeRecipients.length === 0) return
     setSending(true)
     const res = await fetch('/api/sms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: tenant.id, message: smsText.trim() }),
+      body: JSON.stringify({ tenant_id: tenant.id, message: smsText.trim(), segment }),
     })
     setSending(false)
     if (res.ok) {
@@ -79,6 +82,7 @@ export default function KundeklubPage() {
       if (data.yndlingspizza_fallback_count > 0 && data.yndlingspizza_fallback_item) {
         setSentFallback({ count: data.yndlingspizza_fallback_count, item: data.yndlingspizza_fallback_item })
       }
+      setSegment('all')
       setTimeout(() => { setSent(false); setSentFallback(null) }, 6000)
     } else {
       const err = await res.json()
@@ -172,6 +176,20 @@ export default function KundeklubPage() {
                 </div>
               </div>
 
+              {segment === 'inactive' && (
+                <div className="flex items-center justify-between bg-orange-50 border border-orange-100 rounded-2xl px-5 py-3">
+                  <p className="text-[11px] font-black text-[#ea580c] italic uppercase tracking-widest leading-none">
+                    Målgruppe: {inactiveRecipients.length} inaktive kunder
+                  </p>
+                  <button
+                    onClick={() => setSegment('all')}
+                    className="text-[10px] font-black text-slate-400 hover:text-slate-700 uppercase tracking-widest transition-colors leading-none"
+                  >
+                    Skift til alle →
+                  </button>
+                </div>
+              )}
+
               {smsText.includes('{{Yndlingspizza}}') && (
                 <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-2xl px-5 py-3">
                   <span className="text-amber-500 text-sm shrink-0">⚠️</span>
@@ -203,12 +221,12 @@ export default function KundeklubPage() {
                     ))}
                   </div>
                   <p className="text-[11px] font-bold text-slate-400 uppercase italic leading-none">
-                    Sendes til {smsRecipients.length} tilmeldte
+                    Sendes til {activeRecipients.length} {segment === 'inactive' ? 'inaktive' : 'tilmeldte'}
                   </p>
                 </div>
                 <button
                   onClick={handleSend}
-                  disabled={sending || !smsText.trim() || smsRecipients.length === 0}
+                  disabled={sending || !smsText.trim() || activeRecipients.length === 0}
                   className="bg-slate-900 text-white px-10 py-5 rounded-[1.8rem] font-black text-xs uppercase tracking-[0.2em] italic hover:bg-[#ea580c] transition-all shadow-2xl flex items-center gap-4 group disabled:opacity-40"
                 >
                   {sent ? '✓ SENDT!' : sending ? 'SENDER...' : (
@@ -379,10 +397,8 @@ export default function KundeklubPage() {
             </p>
             <button
               onClick={() => {
-                const inaktive = customers.filter((c) => getCustomerStatus(c.order_count) === 'Inaktiv').length
-                if (inaktive > 0) {
-                  setSmsText(`Hej {{Navn}}! Det er længe siden vi har set dig. Som tak for din loyalitet giver vi dig 15% rabat på din næste bestilling i aften. Svar JA for at bestille.`)
-                }
+                setSmsText(`Hej {{Navn}}! Det er længe siden vi har set dig. Som tak for din loyalitet giver vi dig 15% rabat på din næste bestilling i aften. Svar JA for at bestille.`)
+                setSegment('inactive')
                 document.querySelector('textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
                 document.querySelector('textarea')?.focus()
               }}
