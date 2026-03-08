@@ -20,16 +20,22 @@ import { format } from 'date-fns'
 import { da } from 'date-fns/locale'
 import type { SmsCampaign, Customer } from '@/lib/types'
 
-function getCustomerStatus(orderCount: number): 'Stamkunde' | 'Aktiv' | 'Inaktiv' {
+function getCustomerStatus(orderCount: number, lastOrderAt: string | null): 'Stamkunde' | 'Aktiv' | 'Inaktiv' {
+  const isInactive = !lastOrderAt || (Date.now() - new Date(lastOrderAt).getTime()) > 60 * 24 * 60 * 60 * 1000
+  if (isInactive) return 'Inaktiv'
   if (orderCount >= 8) return 'Stamkunde'
-  if (orderCount >= 1) return 'Aktiv'
-  return 'Inaktiv'
+  return 'Aktiv'
 }
 
 
 export default function KundeklubPage() {
   const { tenant, loading: tenantLoading } = useTenant()
   const { customers, loading: customersLoading } = useCustomers(tenant?.id)
+
+  const [menuItems, setMenuItems] = useState<{ id: string; name: string; category: string; price: number }[]>([])
+  const [showRescueForm, setShowRescueForm] = useState(false)
+  const [rescueItem, setRescueItem] = useState('')
+  const [rescueAntal, setRescueAntal] = useState('')
 
   const [campaigns, setCampaigns] = useState<SmsCampaign[]>([])
   const [smsText, setSmsText] = useState(
@@ -44,12 +50,26 @@ export default function KundeklubPage() {
   const [searchTerm, setSearchTerm] = useState('')
 
   const smsRecipients = customers.filter((c) => c.opted_in_sms)
-  const inactiveRecipients = smsRecipients.filter((c) => getCustomerStatus(c.order_count) === 'Inaktiv')
+  const inactiveRecipients = smsRecipients.filter((c) => getCustomerStatus(c.order_count, c.last_order_at) === 'Inaktiv')
   const activeRecipients = segment === 'inactive' ? inactiveRecipients : smsRecipients
   const totalSmsSent = campaigns.reduce((sum, c) => sum + (c.sent_to_count ?? 0), 0)
   const konverteringPct = campaigns.length > 0
     ? Math.min(Math.round((campaigns[0]?.sent_to_count ?? 0) / Math.max(smsRecipients.length, 1) * 100), 100)
     : 0
+
+  const fetchMenuItems = useCallback(async () => {
+    if (!tenant?.id) return
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('menu_items')
+      .select('id, name, category, price')
+      .eq('tenant_id', tenant.id)
+      .eq('is_active', true)
+      .order('category')
+      .order('name')
+    setMenuItems(data ?? [])
+    if (data?.length) setRescueItem(data[0].name)
+  }, [tenant?.id])
 
   const fetchCampaigns = useCallback(async () => {
     if (!tenant?.id) return
@@ -64,7 +84,8 @@ export default function KundeklubPage() {
 
   useEffect(() => {
     fetchCampaigns()
-  }, [fetchCampaigns])
+    fetchMenuItems()
+  }, [fetchCampaigns, fetchMenuItems])
 
   async function handleSend() {
     if (!smsText.trim() || !tenant?.id || activeRecipients.length === 0) return
@@ -174,6 +195,93 @@ export default function KundeklubPage() {
                     </button>
                   ))}
                 </div>
+                <div className="flex gap-2 mt-3 flex-wrap items-center">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-300 leading-none mr-1">Rabat:</span>
+                  {[5, 10, 15, 20, 25, 30, 40, 45, 50].map((pct) => (
+                    <button
+                      key={pct}
+                      onClick={() => setSmsText((t) => t + ` {{Rabat${pct}}}`)}
+                      className="px-3 py-2 bg-green-50 border border-green-100 rounded-xl text-[9px] font-black text-green-600 uppercase hover:bg-green-100 hover:border-green-300 transition-all leading-none"
+                    >
+                      {pct}%
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 mt-3 flex-wrap items-center">
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-300 leading-none mr-1">Eksklusivt:</span>
+                  <button
+                    onClick={() => setShowRescueForm((v) => !v)}
+                    className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase transition-all leading-none border ${showRescueForm ? 'bg-orange-100 border-orange-300 text-[#ea580c]' : 'bg-orange-50 border-orange-100 text-[#ea580c] hover:bg-orange-100'}`}
+                  >
+                    Rednings-deal
+                  </button>
+                </div>
+
+                {showRescueForm && (
+                  <div className="mt-3 bg-orange-50 border border-orange-100 rounded-2xl p-4 flex flex-wrap gap-3 items-end">
+                    <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Ret</label>
+                      {menuItems.length > 0 && rescueItem !== '__custom__' ? (
+                        <select
+                          value={rescueItem}
+                          onChange={(e) => setRescueItem(e.target.value)}
+                          className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20"
+                        >
+                          {Object.entries(
+                            menuItems.reduce<Record<string, typeof menuItems>>((acc, item) => {
+                              acc[item.category] = [...(acc[item.category] ?? []), item]
+                              return acc
+                            }, {})
+                          ).map(([cat, items]) => (
+                            <optgroup key={cat} label={cat}>
+                              {items.map((item) => (
+                                <option key={item.id} value={item.name}>
+                                  {item.name} ({item.price} kr.)
+                                </option>
+                              ))}
+                            </optgroup>
+                          ))}
+                          <option value="__custom__">Skriv selv...</option>
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder="fx Margherita"
+                          value={rescueItem === '__custom__' ? '' : rescueItem}
+                          onChange={(e) => setRescueItem(e.target.value)}
+                          className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20"
+                          autoFocus
+                        />
+                      )}
+                    </div>
+                    <div className="flex flex-col gap-1.5 w-20">
+                      <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Antal</label>
+                      <input
+                        type="number"
+                        min={1}
+                        placeholder="—"
+                        value={rescueAntal}
+                        onChange={(e) => setRescueAntal(e.target.value)}
+                        className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20 w-full"
+                      />
+                    </div>
+                    <button
+                      onClick={() => {
+                        if (!rescueItem || rescueItem === '__custom__') return
+                        const tag = rescueAntal
+                          ? `{{RedningsDeal:${rescueItem}:${rescueAntal}}}`
+                          : `{{RedningsDeal:${rescueItem}}}`
+                        setSmsText((t) => t + ` ${tag}`)
+                        setShowRescueForm(false)
+                        setRescueAntal('')
+                      }}
+                      className="px-5 py-2 bg-[#ea580c] text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-orange-700 transition-all leading-none"
+                    >
+                      Tilføj
+                    </button>
+                  </div>
+                )}
               </div>
 
               {segment === 'inactive' && (
@@ -187,6 +295,15 @@ export default function KundeklubPage() {
                   >
                     Skift til alle →
                   </button>
+                </div>
+              )}
+
+              {/\{\{Rabat\d+\}\}/.test(smsText) && (
+                <div className="flex items-start gap-3 bg-green-50 border border-green-100 rounded-2xl px-5 py-3">
+                  <span className="text-green-500 text-sm shrink-0">💰</span>
+                  <p className="text-[11px] font-bold text-green-700 italic leading-relaxed">
+                    Rabatten beregnes automatisk i kr. per kunde — baseret på gennemsnitligt ordrebeløb. Kunder uden ordrehistorik modtager butikkens gennemsnit.
+                  </p>
                 </div>
               )}
 
@@ -279,7 +396,7 @@ export default function KundeklubPage() {
                     </tr>
                   )}
                   {filtered.map((customer) => {
-                    const status = getCustomerStatus(customer.order_count)
+                    const status = getCustomerStatus(customer.order_count, customer.last_order_at)
                     return (
                       <tr key={customer.id} className="hover:bg-slate-50/50 transition-colors group">
                         <td className="px-8 py-5">
@@ -368,7 +485,7 @@ export default function KundeklubPage() {
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-black uppercase italic text-slate-400 leading-none">Stamkunder</span>
                 <span className="text-sm font-black italic text-slate-800 leading-none">
-                  {customers.filter((c) => getCustomerStatus(c.order_count) === 'Stamkunde').length}
+                  {customers.filter((c) => getCustomerStatus(c.order_count, c.last_order_at) === 'Stamkunde').length}
                 </span>
               </div>
               <div className="flex justify-between items-center">
@@ -391,8 +508,8 @@ export default function KundeklubPage() {
               </h4>
             </div>
             <p className="text-[13px] font-bold italic text-slate-600 leading-relaxed">
-              {customers.filter((c) => getCustomerStatus(c.order_count) === 'Inaktiv').length > 0
-                ? `Du har ${customers.filter((c) => getCustomerStatus(c.order_count) === 'Inaktiv').length} inaktive kunder. Skal jeg sende dem et "Savner dig"-tilbud?`
+              {customers.filter((c) => getCustomerStatus(c.order_count, c.last_order_at) === 'Inaktiv').length > 0
+                ? `Du har ${customers.filter((c) => getCustomerStatus(c.order_count, c.last_order_at) === 'Inaktiv').length} inaktive kunder. Skal jeg sende dem et "Savner dig"-tilbud?`
                 : 'Dine kunder er aktive. Overvej en kampagne for at booste omsætningen i weekenden.'}
             </p>
             <button
