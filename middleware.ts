@@ -37,18 +37,22 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protected tenant routes: /[tenant_slug]/...
-  const tenantSlugMatch = pathname.match(/^\/([^/]+)\//)
+  const tenantSlugMatch = pathname.match(/^\/([^/]+)(?:\/|$)/)
   const tenantSlug = tenantSlugMatch?.[1]
 
   if (!tenantSlug || tenantSlug === 'api') {
     return supabaseResponse
   }
 
-  // Not logged in → redirect to login
+  // Tenant login page is public
+  if (pathname === `/${tenantSlug}/login`) {
+    return supabaseResponse
+  }
+
+  // Not logged in → redirect to tenant login
   if (!user) {
     const loginUrl = request.nextUrl.clone()
-    loginUrl.pathname = '/login'
-    loginUrl.searchParams.set('redirect', pathname)
+    loginUrl.pathname = `/${tenantSlug}/login`
     return NextResponse.redirect(loginUrl)
   }
 
@@ -62,8 +66,7 @@ export async function middleware(request: NextRequest) {
 
   if (!tenantUser) {
     const loginUrl = request.nextUrl.clone()
-    loginUrl.pathname = '/login'
-    loginUrl.searchParams.set('error', 'unauthorized')
+    loginUrl.pathname = `/${tenantSlug}/login`
     return NextResponse.redirect(loginUrl)
   }
 
