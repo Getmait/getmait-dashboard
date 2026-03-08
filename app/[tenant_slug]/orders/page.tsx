@@ -7,6 +7,7 @@ import {
   Coins,
   User,
   Truck,
+  MapPin,
   CheckCircle2,
 } from 'lucide-react'
 import { format } from 'date-fns'
@@ -25,27 +26,6 @@ function parseOrdreDetaljer(raw: string): string {
   return raw
 }
 
-function getStatusStyle(status: string) {
-  switch (status) {
-    case 'ny':
-    case 'pending':
-      return { label: 'Ny', color: 'bg-orange-100 text-[#ea580c]' }
-    case 'modtaget':
-    case 'confirmed':
-    case 'bekraeftet':
-    case 'bekræftet':
-    case 'afventer_betaling':
-      return { label: 'Modtaget', color: 'bg-green-100 text-green-700' }
-    case 'completed':
-    case 'afhentet':
-    case 'afsluttet':
-      return { label: 'Afsluttet', color: 'bg-slate-100 text-slate-500' }
-    case 'annulleret':
-      return { label: 'Annulleret', color: 'bg-red-100 text-red-600' }
-    default:
-      return { label: 'Modtaget', color: 'bg-green-100 text-green-700' }
-  }
-}
 
 export default async function OrdersPage({
   params,
@@ -167,8 +147,7 @@ export default async function OrdersPage({
               <tr className="bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-[0.2em] italic border-b border-slate-100">
                 <th className="px-8 py-5">Kunde</th>
                 <th className="px-6 py-5">Bestilling</th>
-                <th className="px-6 py-5">Levering</th>
-                <th className="px-6 py-5">Status</th>
+                <th className="px-6 py-5">Levering / Adresse</th>
                 <th className="px-6 py-5 text-right">Beløb</th>
                 <th className="px-8 py-5 text-right">Tidspunkt</th>
               </tr>
@@ -176,13 +155,12 @@ export default async function OrdersPage({
             <tbody className="divide-y divide-slate-50">
               {alle.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-8 py-16 text-center text-slate-300 font-semibold italic">
+                  <td colSpan={5} className="px-8 py-16 text-center text-slate-300 font-semibold italic">
                     Ingen bestillinger endnu
                   </td>
                 </tr>
               )}
               {alle.map((order) => {
-                const st = getStatusStyle(order.status)
                 const dato = new Date(order.oprettet_at)
                 const diffMin = Math.round((now.getTime() - dato.getTime()) / 60000)
                 const tidLabel =
@@ -218,19 +196,22 @@ export default async function OrdersPage({
                     </td>
                     <td className="px-6 py-5">
                       {order.levering ? (
-                        <span className="flex items-center gap-1.5 text-[9px] font-black uppercase text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg leading-none w-fit">
-                          <Truck size={11} /> Levering
-                        </span>
+                        <div className="flex flex-col gap-1.5">
+                          <span className="flex items-center gap-1.5 text-[9px] font-black uppercase text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg leading-none w-fit">
+                            <Truck size={11} /> Levering
+                          </span>
+                          {order.delivery_address && (
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 italic leading-none">
+                              <MapPin size={10} className="shrink-0" />
+                              {order.delivery_address}
+                            </span>
+                          )}
+                        </div>
                       ) : (
                         <span className="text-[9px] font-black uppercase text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg leading-none">
                           Afhentning
                         </span>
                       )}
-                    </td>
-                    <td className="px-6 py-5">
-                      <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-lg leading-none ${st.color}`}>
-                        {st.label}
-                      </span>
                     </td>
                     <td className="px-6 py-5 text-right">
                       <span className="text-sm font-black italic text-[#ea580c] leading-none">
