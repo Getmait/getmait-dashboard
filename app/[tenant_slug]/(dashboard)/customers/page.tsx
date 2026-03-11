@@ -137,16 +137,16 @@ export default function KundeklubPage() {
     }
     if (offerType === 'fejl') {
       const pris = offerPris ? ` kun ${offerPris} kr.` : ''
-      return `Hej! Vi har ${offerAntal} stk. ${item} klar nu${pris} — fejlbestilling. Svar JA for at bestille. Første der svarer får den!`
+      return `Hej! Vi har ${offerAntal} stk. ${item} klar nu${pris}. Fejlbestilling. Svar JA for at bestille. Første der svarer får den!`
     }
     if (offerType === 'dato') {
-      return `Hej {{Navn}}! Vi har friske råvarer der skal bruges i dag — {{Rabat${offerPct}}} rabat på ${item} i aften. Svar JA for at bestille.`
+      return `Hej {{Navn}}! Vi har friske råvarer der skal bruges i dag. {{Rabat${offerPct}}} rabat på ${item} i aften. Svar JA for at bestille.`
     }
     if (offerType === 'fri') {
       return friTekst
     }
     if (offerType === 'yndling') {
-      return `Hej {{Navn}}! Vi kan se at du elsker {{Yndlingspizza}} 🍕 Skal vi lave den til dig i aften? Svar JA for at bestille — vi klargør den med det samme!`
+      return `Hej {{Navn}}! Vi kan se at du elsker {{Yndlingspizza}}. Skal vi lave den til dig i aften? Svar JA for at bestille. Vi klargør den med det samme!`
     }
     return ''
   }
@@ -467,6 +467,37 @@ export default function KundeklubPage() {
                         Sendes kun til kunder der ikke har bestilt i 60+ dage ({inactiveRecipients.length} kunder)
                       </p>
                     )}
+                  </div>
+                )}
+
+                {/* Tags */}
+                {offerType !== null && (
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-300 mb-2 leading-none">
+                      Tilpas med tags — klik for at tilføje til fri tekst
+                    </p>
+                    <div className="flex gap-2 flex-wrap">
+                      {[
+                        { tag: '{{Navn}}', label: 'Navn' },
+                        { tag: '{{Yndlingspizza}}', label: 'Yndlingspizza' },
+                        { tag: '{{DageSiden}}', label: 'Dage siden sidst' },
+                        { tag: '{{Rabat10}}', label: 'Rabat 10%' },
+                        { tag: '{{Rabat15}}', label: 'Rabat 15%' },
+                        { tag: '{{Rabat20}}', label: 'Rabat 20%' },
+                      ].map(({ tag, label }) => (
+                        <button
+                          key={tag}
+                          onClick={() => {
+                            const base = offerType !== 'fri' ? generateSmsText() + ' ' : friTekst + ' '
+                            setFriTekst(base + tag)
+                            setOfferType('fri')
+                          }}
+                          className="px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase tracking-widest hover:border-[#ea580c] hover:text-[#ea580c] transition-all leading-none"
+                        >
+                          + {label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
