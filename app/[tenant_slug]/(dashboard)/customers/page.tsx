@@ -127,13 +127,13 @@ export default function KundeklubPage() {
   function generateSmsText(): string {
     const item = offerItem || menuItems[0]?.name || 'pizza'
     if (offerType === 'rabat') {
-      return `Hej {{Navn}}! Vi giver dig {{Rabat${offerPct}}} rabat på din næste bestilling. Svar JA for at bestille.`
+      return `Hej {{Navn}}! Vi giver dig {{Rabat${offerPct}}} rabat på din næste bestilling. Ring eller bestil online nu.`
     }
     if (offerType === 'gratis') {
       return `Hej {{Navn}}! Bestil ${offerAntal} pizzaer i aften og få ${item} med gratis. Svar JA for at bestille.`
     }
     if (offerType === 'savner') {
-      return `Hej {{Navn}}! Det er {{DageSiden}} dage siden vi sidst så dig. Som stamkunde får du {{Rabat${offerPct}}} rabat i aften. Svar JA for at bestille.`
+      return `Hej {{Navn}}! Det er {{DageSiden}} dage siden vi sidst så dig. Som stamkunde får du {{Rabat${offerPct}}} rabat i aften. Ring eller bestil online nu.`
     }
     if (offerType === 'fejl') {
       const pris = offerPris ? ` kun ${offerPris} kr.` : ''
