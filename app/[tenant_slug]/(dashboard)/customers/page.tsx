@@ -17,11 +17,75 @@ import {
   Percent,
   Pizza,
   Heart,
+  AlertTriangle,
+  Leaf,
+  PenLine,
+  Star,
 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { format } from 'date-fns'
 import { da } from 'date-fns/locale'
 import type { SmsCampaign, Customer } from '@/lib/types'
+
+function MenuItemPicker({ menuItems, value, onChange }: {
+  menuItems: { id: string; name: string; category: string; price: number }[]
+  value: string
+  onChange: (v: string) => void
+}) {
+  if (menuItems.length > 0) {
+    return (
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20"
+      >
+        {Object.entries(
+          menuItems.reduce<Record<string, typeof menuItems>>((acc, item) => {
+            acc[item.category] = [...(acc[item.category] ?? []), item]
+            return acc
+          }, {})
+        ).map(([cat, items]) => (
+          <optgroup key={cat} label={cat}>
+            {items.map((item) => (
+              <option key={item.id} value={item.name}>
+                {item.name} ({item.price} kr.)
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+    )
+  }
+  return (
+    <input
+      type="text"
+      placeholder="fx Margherita"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20"
+    />
+  )
+}
+
+function AntalStepper({ value, onChange, min = 1 }: { value: number; onChange: (v: number) => void; min?: number }) {
+  return (
+    <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2">
+      <button
+        onClick={() => onChange(Math.max(min, value - 1))}
+        className="w-7 h-7 rounded-lg bg-slate-100 font-black text-slate-600 hover:bg-slate-200 transition-all flex items-center justify-center text-lg leading-none"
+      >
+        −
+      </button>
+      <span className="flex-1 text-center text-sm font-black text-slate-800">{value}</span>
+      <button
+        onClick={() => onChange(value + 1)}
+        className="w-7 h-7 rounded-lg bg-slate-100 font-black text-slate-600 hover:bg-slate-200 transition-all flex items-center justify-center text-lg leading-none"
+      >
+        +
+      </button>
+    </div>
+  )
+}
 
 function getCustomerStatus(orderCount: number, lastOrderAt: string | null): 'Stamkunde' | 'Aktiv' | 'Inaktiv' | 'Ny' {
   if (!lastOrderAt) return 'Ny'
@@ -30,7 +94,7 @@ function getCustomerStatus(orderCount: number, lastOrderAt: string | null): 'Sta
   return 'Aktiv'
 }
 
-type OfferType = 'rabat' | 'gratis' | 'savner' | null
+type OfferType = 'rabat' | 'gratis' | 'savner' | 'fejl' | 'dato' | 'fri' | 'yndling' | null
 
 export default function KundeklubPage() {
   const { tenant, loading: tenantLoading } = useTenant()
@@ -44,6 +108,8 @@ export default function KundeklubPage() {
   const [offerPct, setOfferPct] = useState(15)
   const [offerItem, setOfferItem] = useState('')
   const [offerAntal, setOfferAntal] = useState(2)
+  const [offerPris, setOfferPris] = useState('')
+  const [friTekst, setFriTekst] = useState('')
 
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
@@ -61,13 +127,26 @@ export default function KundeklubPage() {
   function generateSmsText(): string {
     const item = offerItem || menuItems[0]?.name || 'pizza'
     if (offerType === 'rabat') {
-      return `Hej {{Navn}}! Vi giver dig {{Rabat${offerPct}}} rabat på din næste bestilling. Ring eller bestil online nu.`
+      return `Hej {{Navn}}! Vi giver dig {{Rabat${offerPct}}} rabat på din næste bestilling. Svar JA for at bestille.`
     }
     if (offerType === 'gratis') {
-      return `Hej {{Navn}}! Bestil ${offerAntal} pizzaer i aften og få ${item} med gratis. Kun i aften!`
+      return `Hej {{Navn}}! Bestil ${offerAntal} pizzaer i aften og få ${item} med gratis. Svar JA for at bestille.`
     }
     if (offerType === 'savner') {
       return `Hej {{Navn}}! Det er {{DageSiden}} dage siden vi sidst så dig. Som stamkunde får du {{Rabat${offerPct}}} rabat i aften. Svar JA for at bestille.`
+    }
+    if (offerType === 'fejl') {
+      const pris = offerPris ? ` kun ${offerPris} kr.` : ''
+      return `Hej! Vi har ${offerAntal} stk. ${item} klar nu${pris} — fejlbestilling. Svar JA for at bestille. Første der svarer får den!`
+    }
+    if (offerType === 'dato') {
+      return `Hej {{Navn}}! Vi har friske råvarer der skal bruges i dag — {{Rabat${offerPct}}} rabat på ${item} i aften. Svar JA for at bestille.`
+    }
+    if (offerType === 'fri') {
+      return friTekst
+    }
+    if (offerType === 'yndling') {
+      return `Hej {{Navn}}! Vi kan se at du elsker {{Yndlingspizza}} 🍕 Skal vi lave den til dig i aften? Svar JA for at bestille — vi klargør den med det samme!`
     }
     return ''
   }
@@ -116,6 +195,7 @@ export default function KundeklubPage() {
       setSent(true)
       fetchCampaigns()
       setOfferType(null)
+      setFriTekst('')
       setTimeout(() => setSent(false), 4000)
     } else {
       const err = await res.json()
@@ -141,21 +221,45 @@ export default function KundeklubPage() {
   const offerTypes: { type: OfferType; icon: React.ReactNode; title: string; desc: string }[] = [
     {
       type: 'rabat',
-      icon: <Percent size={22} />,
+      icon: <Percent size={20} />,
       title: 'Rabat',
       desc: 'X% rabat på næste bestilling',
     },
     {
       type: 'gratis',
-      icon: <Pizza size={22} />,
+      icon: <Pizza size={20} />,
       title: 'Gratis ret',
       desc: 'Bestil X, få en ret gratis',
     },
     {
       type: 'savner',
-      icon: <Heart size={22} />,
+      icon: <Heart size={20} />,
       title: 'Vi savner dig',
-      desc: 'Til kunder der ikke har bestilt i 60+ dage',
+      desc: 'Til inaktive kunder, 60+ dage',
+    },
+    {
+      type: 'fejl',
+      icon: <AlertTriangle size={20} />,
+      title: 'Fejlbestilling',
+      desc: 'Sælg en klar ret billigt — hurtig SMS',
+    },
+    {
+      type: 'dato',
+      icon: <Leaf size={20} />,
+      title: 'Dato-vare',
+      desc: 'Råvarer der skal bruges i dag',
+    },
+    {
+      type: 'yndling',
+      icon: <Star size={20} />,
+      title: 'Yndlingsret',
+      desc: 'Personlig SMS med kundens favoritret',
+    },
+    {
+      type: 'fri',
+      icon: <PenLine size={20} />,
+      title: 'Skriv selv',
+      desc: 'Fri tekst fra bunden',
     },
   ]
 
@@ -205,7 +309,7 @@ export default function KundeklubPage() {
               <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none ml-1">
                 Hvad vil du tilbyde?
               </p>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                 {offerTypes.map(({ type, icon, title, desc }) => (
                   <button
                     key={type}
@@ -259,74 +363,112 @@ export default function KundeklubPage() {
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
                         Gratis ret
                       </p>
-                      {menuItems.length > 0 ? (
-                        <select
-                          value={offerItem}
-                          onChange={(e) => setOfferItem(e.target.value)}
-                          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20"
-                        >
-                          {Object.entries(
-                            menuItems.reduce<Record<string, typeof menuItems>>((acc, item) => {
-                              acc[item.category] = [...(acc[item.category] ?? []), item]
-                              return acc
-                            }, {})
-                          ).map(([cat, items]) => (
-                            <optgroup key={cat} label={cat}>
-                              {items.map((item) => (
-                                <option key={item.id} value={item.name}>
-                                  {item.name} ({item.price} kr.)
-                                </option>
-                              ))}
-                            </optgroup>
-                          ))}
-                        </select>
-                      ) : (
-                        <input
-                          type="text"
-                          placeholder="fx Margherita"
-                          value={offerItem}
-                          onChange={(e) => setOfferItem(e.target.value)}
-                          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20"
-                        />
-                      )}
+                      <MenuItemPicker menuItems={menuItems} value={offerItem} onChange={setOfferItem} />
                     </div>
                     <div className="w-32">
                       <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
                         Min. antal
                       </p>
-                      <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2">
-                        <button
-                          onClick={() => setOfferAntal(Math.max(1, offerAntal - 1))}
-                          className="w-7 h-7 rounded-lg bg-slate-100 font-black text-slate-600 hover:bg-slate-200 transition-all flex items-center justify-center text-lg leading-none"
-                        >
-                          −
-                        </button>
-                        <span className="flex-1 text-center text-sm font-black text-slate-800">{offerAntal}</span>
-                        <button
-                          onClick={() => setOfferAntal(offerAntal + 1)}
-                          className="w-7 h-7 rounded-lg bg-slate-100 font-black text-slate-600 hover:bg-slate-200 transition-all flex items-center justify-center text-lg leading-none"
-                        >
-                          +
-                        </button>
+                      <AntalStepper value={offerAntal} onChange={setOfferAntal} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Fejlbestilling vælger */}
+                {offerType === 'fejl' && (
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                        Hvilken ret?
+                      </p>
+                      <MenuItemPicker menuItems={menuItems} value={offerItem} onChange={setOfferItem} />
+                    </div>
+                    <div className="w-24">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                        Antal
+                      </p>
+                      <AntalStepper value={offerAntal} onChange={setOfferAntal} min={1} />
+                    </div>
+                    <div className="w-32">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                        Pris (kr.)
+                      </p>
+                      <input
+                        type="number"
+                        min={1}
+                        placeholder="fx 49"
+                        value={offerPris}
+                        onChange={(e) => setOfferPris(e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Dato-vare vælger */}
+                {offerType === 'dato' && (
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                        Hvilken ret?
+                      </p>
+                      <MenuItemPicker menuItems={menuItems} value={offerItem} onChange={setOfferItem} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                        Rabat
+                      </p>
+                      <div className="flex gap-2 flex-wrap">
+                        {[10, 15, 20, 25, 30].map((pct) => (
+                          <button
+                            key={pct}
+                            onClick={() => setOfferPct(pct)}
+                            className={`px-4 py-2.5 rounded-xl text-[11px] font-black uppercase transition-all ${
+                              offerPct === pct
+                                ? 'bg-[#ea580c] text-white shadow-md'
+                                : 'bg-white border border-slate-200 text-slate-500 hover:border-[#ea580c] hover:text-[#ea580c]'
+                            }`}
+                          >
+                            {pct}%
+                          </button>
+                        ))}
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* SMS Preview */}
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
-                    Forhåndsvisning
-                  </p>
-                  <div className="bg-white border border-slate-200 rounded-2xl p-4 text-sm text-slate-600 italic leading-relaxed">
-                    {generateSmsText()}
-                  </div>
-                  {offerType === 'savner' && (
-                    <p className="text-[10px] font-bold text-orange-500 mt-2 ml-1 leading-none italic">
-                      Sendes kun til kunder der ikke har bestilt i 60+ dage ({inactiveRecipients.length} kunder)
+                {/* Fri tekst */}
+                {offerType === 'fri' && (
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                      Din besked
                     </p>
-                  )}
-                </div>
+                    <textarea
+                      rows={4}
+                      placeholder="Skriv din SMS her..."
+                      value={friTekst}
+                      onChange={(e) => setFriTekst(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm font-medium focus:ring-4 focus:ring-[#ea580c]/5 outline-none transition-all text-slate-700 leading-relaxed resize-none"
+                    />
+                  </div>
+                )}
+
+                {/* SMS Preview */}
+                {offerType !== 'fri' && (
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                      Forhåndsvisning
+                    </p>
+                    <div className="bg-white border border-slate-200 rounded-2xl p-4 text-sm text-slate-600 italic leading-relaxed">
+                      {generateSmsText()}
+                    </div>
+                    {offerType === 'savner' && (
+                      <p className="text-[10px] font-bold text-orange-500 mt-2 ml-1 leading-none italic">
+                        Sendes kun til kunder der ikke har bestilt i 60+ dage ({inactiveRecipients.length} kunder)
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -349,7 +491,7 @@ export default function KundeklubPage() {
               </div>
               <button
                 onClick={handleSend}
-                disabled={sending || offerType === null || activeRecipients.length === 0}
+                disabled={sending || offerType === null || activeRecipients.length === 0 || (offerType === 'fri' && !friTekst.trim())}
                 className="bg-slate-900 text-white px-10 py-5 rounded-[1.8rem] font-black text-xs uppercase tracking-[0.2em] italic hover:bg-[#ea580c] transition-all shadow-2xl flex items-center gap-4 group disabled:opacity-40"
               >
                 {sent ? '✓ SENDT!' : sending ? 'SENDER...' : (
