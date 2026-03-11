@@ -133,7 +133,20 @@ export default function KundeklubPage() {
       return `Hej {{Navn}}! Bestil ${offerAntal} pizzaer i aften og få ${item} med gratis. Svar JA for at bestille.`
     }
     if (offerType === 'savner') {
-      return `Hej {{Navn}}! Det er {{DageSiden}} dage siden vi sidst så dig. Som stamkunde får du {{Rabat${offerPct}}} rabat i aften. Svar JA for at bestille.`
+      return `Hej {{Navn}}! Det er {{DageSiden}} dage siden vi sidst så dig. Som stamkunde får du {{Rabat${offerPct}}} rabat i aften. Ring eller bestil online nu.`
+    }
+    if (offerType === 'fejl') {
+      const pris = offerPris ? ` kun ${offerPris} kr.` : ''
+      return `Hej! Vi har ${offerAntal} stk. ${item} klar nu${pris}. Fejlbestilling. Svar JA for at bestille. Første der svarer får den!`
+    }
+    if (offerType === 'dato') {
+      return `Hej {{Navn}}! Vi har friske råvarer der skal bruges i dag. {{Rabat${offerPct}}} rabat på ${item} i aften. Svar JA for at bestille.`
+    }
+    if (offerType === 'fri') {
+      return friTekst
+    }
+    if (offerType === 'yndling') {
+      return `Hej {{Navn}}! Vi kan se at du elsker {{Yndlingspizza}}. Skal vi lave den til dig i aften? Svar JA for at bestille. Vi klargør den med det samme!`
     }
     if (offerType === 'fejl') {
       const pris = offerPris ? ` kun ${offerPris} kr.` : ''
