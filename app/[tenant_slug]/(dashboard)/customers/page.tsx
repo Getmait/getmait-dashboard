@@ -14,11 +14,78 @@ import {
   Activity,
   ShieldCheck,
   Search,
+  Percent,
+  Pizza,
+  Heart,
+  AlertTriangle,
+  Leaf,
+  PenLine,
+  Star,
 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { format } from 'date-fns'
 import { da } from 'date-fns/locale'
 import type { SmsCampaign, Customer } from '@/lib/types'
+
+function MenuItemPicker({ menuItems, value, onChange }: {
+  menuItems: { id: string; name: string; category: string; price: number }[]
+  value: string
+  onChange: (v: string) => void
+}) {
+  if (menuItems.length > 0) {
+    return (
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20"
+      >
+        {Object.entries(
+          menuItems.reduce<Record<string, typeof menuItems>>((acc, item) => {
+            acc[item.category] = [...(acc[item.category] ?? []), item]
+            return acc
+          }, {})
+        ).map(([cat, items]) => (
+          <optgroup key={cat} label={cat}>
+            {items.map((item) => (
+              <option key={item.id} value={item.name}>
+                {item.name} ({item.price} kr.)
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+    )
+  }
+  return (
+    <input
+      type="text"
+      placeholder="fx Margherita"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20"
+    />
+  )
+}
+
+function AntalStepper({ value, onChange, min = 1 }: { value: number; onChange: (v: number) => void; min?: number }) {
+  return (
+    <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl px-3 py-2">
+      <button
+        onClick={() => onChange(Math.max(min, value - 1))}
+        className="w-7 h-7 rounded-lg bg-slate-100 font-black text-slate-600 hover:bg-slate-200 transition-all flex items-center justify-center text-lg leading-none"
+      >
+        −
+      </button>
+      <span className="flex-1 text-center text-sm font-black text-slate-800">{value}</span>
+      <button
+        onClick={() => onChange(value + 1)}
+        className="w-7 h-7 rounded-lg bg-slate-100 font-black text-slate-600 hover:bg-slate-200 transition-all flex items-center justify-center text-lg leading-none"
+      >
+        +
+      </button>
+    </div>
+  )
+}
 
 function getCustomerStatus(orderCount: number, lastOrderAt: string | null): 'Stamkunde' | 'Aktiv' | 'Inaktiv' | 'Ny' {
   if (!lastOrderAt) return 'Ny'
@@ -27,33 +94,62 @@ function getCustomerStatus(orderCount: number, lastOrderAt: string | null): 'Sta
   return 'Aktiv'
 }
 
+type OfferType = 'rabat' | 'gratis' | 'savner' | 'fejl' | 'dato' | 'fri' | 'yndling' | null
 
 export default function KundeklubPage() {
   const { tenant, loading: tenantLoading } = useTenant()
   const { customers, loading: customersLoading } = useCustomers(tenant?.id)
 
   const [menuItems, setMenuItems] = useState<{ id: string; name: string; category: string; price: number }[]>([])
-  const [showRescueForm, setShowRescueForm] = useState(false)
-  const [rescueItem, setRescueItem] = useState('')
-  const [rescueAntal, setRescueAntal] = useState('')
-
   const [campaigns, setCampaigns] = useState<SmsCampaign[]>([])
-  const [smsText, setSmsText] = useState(
-    'Hej {{Navn}}. Som medlem af vores kundeklub giver vi dig 10% rabat på {{Yndlingspizza}}. Svar JA og vi klargør din ordre.'
-  )
+
+  // Simplified offer form
+  const [offerType, setOfferType] = useState<OfferType>(null)
+  const [offerPct, setOfferPct] = useState(15)
+  const [offerItem, setOfferItem] = useState('')
+  const [offerAntal, setOfferAntal] = useState(2)
+  const [offerPris, setOfferPris] = useState('')
+  const [friTekst, setFriTekst] = useState('')
+
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
-  const [sentFallback, setSentFallback] = useState<{ count: number; item: string } | null>(null)
-  const [segment, setSegment] = useState<'all' | 'inactive'>('all')
   const [searchTerm, setSearchTerm] = useState('')
 
   const smsRecipients = customers.filter((c) => c.opted_in_sms)
   const inactiveRecipients = smsRecipients.filter((c) => getCustomerStatus(c.order_count, c.last_order_at) === 'Inaktiv')
+  const segment = offerType === 'savner' ? 'inactive' : 'all'
   const activeRecipients = segment === 'inactive' ? inactiveRecipients : smsRecipients
   const totalSmsSent = campaigns.reduce((sum, c) => sum + (c.sent_to_count ?? 0), 0)
   const konverteringPct = campaigns.length > 0
     ? Math.min(Math.round((campaigns[0]?.sent_to_count ?? 0) / Math.max(smsRecipients.length, 1) * 100), 100)
     : 0
+
+  function generateSmsText(): string {
+    const item = offerItem || menuItems[0]?.name || 'pizza'
+    if (offerType === 'rabat') {
+      return `Hej {{Navn}}! Vi giver dig {{Rabat${offerPct}}} rabat på din næste bestilling. Ring eller bestil online nu.`
+    }
+    if (offerType === 'gratis') {
+      return `Hej {{Navn}}! Bestil ${offerAntal} pizzaer i aften og få ${item} med gratis. Svar JA for at bestille.`
+    }
+    if (offerType === 'savner') {
+      return `Hej {{Navn}}! Det er {{DageSiden}} dage siden vi sidst så dig. Som stamkunde får du {{Rabat${offerPct}}} rabat i aften. Ring eller bestil online nu.`
+    }
+    if (offerType === 'fejl') {
+      const pris = offerPris ? ` kun ${offerPris} kr.` : ''
+      return `Hej! Vi har ${offerAntal} stk. ${item} klar nu${pris}. Fejlbestilling. Svar JA for at bestille. Første der svarer får den!`
+    }
+    if (offerType === 'dato') {
+      return `Hej {{Navn}}! Vi har friske råvarer der skal bruges i dag. {{Rabat${offerPct}}} rabat på ${item} i aften. Svar JA for at bestille.`
+    }
+    if (offerType === 'fri') {
+      return friTekst
+    }
+    if (offerType === 'yndling') {
+      return `Hej {{Navn}}! Vi kan se at du elsker {{Yndlingspizza}}. Skal vi lave den til dig i aften? Svar JA for at bestille. Vi klargør den med det samme!`
+    }
+    return ''
+  }
 
   const fetchMenuItems = useCallback(async () => {
     if (!tenant?.id) return
@@ -66,7 +162,7 @@ export default function KundeklubPage() {
       .order('category')
       .order('name')
     setMenuItems(data ?? [])
-    if (data?.length) setRescueItem(data[0].name)
+    if (data?.length) setOfferItem(data[0].name)
   }, [tenant?.id])
 
   const fetchCampaigns = useCallback(async () => {
@@ -86,23 +182,21 @@ export default function KundeklubPage() {
   }, [fetchCampaigns, fetchMenuItems])
 
   async function handleSend() {
-    if (!smsText.trim() || !tenant?.id || activeRecipients.length === 0) return
+    const smsText = generateSmsText()
+    if (!smsText || !tenant?.id || activeRecipients.length === 0) return
     setSending(true)
     const res = await fetch('/api/sms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: tenant.id, message: smsText.trim(), segment }),
+      body: JSON.stringify({ tenant_id: tenant.id, message: smsText, segment }),
     })
     setSending(false)
     if (res.ok) {
-      const data = await res.json()
       setSent(true)
       fetchCampaigns()
-      if (data.yndlingspizza_fallback_count > 0 && data.yndlingspizza_fallback_item) {
-        setSentFallback({ count: data.yndlingspizza_fallback_count, item: data.yndlingspizza_fallback_item })
-      }
-      setSegment('all')
-      setTimeout(() => { setSent(false); setSentFallback(null) }, 6000)
+      setOfferType(null)
+      setFriTekst('')
+      setTimeout(() => setSent(false), 4000)
     } else {
       const err = await res.json()
       alert(err.error ?? 'SMS-udsendelse fejlede')
@@ -124,6 +218,51 @@ export default function KundeklubPage() {
     )
   }
 
+  const offerTypes: { type: OfferType; icon: React.ReactNode; title: string; desc: string }[] = [
+    {
+      type: 'rabat',
+      icon: <Percent size={20} />,
+      title: 'Rabat',
+      desc: 'X% rabat på næste bestilling',
+    },
+    {
+      type: 'gratis',
+      icon: <Pizza size={20} />,
+      title: 'Gratis ret',
+      desc: 'Bestil X, få en ret gratis',
+    },
+    {
+      type: 'savner',
+      icon: <Heart size={20} />,
+      title: 'Vi savner dig',
+      desc: 'Til inaktive kunder, 60+ dage',
+    },
+    {
+      type: 'fejl',
+      icon: <AlertTriangle size={20} />,
+      title: 'Fejlbestilling',
+      desc: 'Sælg en klar ret billigt — hurtig SMS',
+    },
+    {
+      type: 'dato',
+      icon: <Leaf size={20} />,
+      title: 'Dato-vare',
+      desc: 'Råvarer der skal bruges i dag',
+    },
+    {
+      type: 'yndling',
+      icon: <Star size={20} />,
+      title: 'Yndlingsret',
+      desc: 'Personlig SMS med kundens favoritret',
+    },
+    {
+      type: 'fri',
+      icon: <PenLine size={20} />,
+      title: 'Skriv selv',
+      desc: 'Fri tekst fra bunden',
+    },
+  ]
+
   return (
     <div className="space-y-8">
 
@@ -134,7 +273,7 @@ export default function KundeklubPage() {
             Kundeklub & SMS
           </h2>
           <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-2 leading-none">
-            Send hyper-personaliserede tilbud direkte til dine stamkunder.
+            Send tilbud direkte til dine stamkunder.
           </p>
         </div>
         <div className="flex gap-3">
@@ -156,199 +295,240 @@ export default function KundeklubPage() {
 
           {/* SMS COMPOSER */}
           <section className="bg-white rounded-[2.5rem] p-10 border border-slate-200 shadow-sm relative overflow-hidden">
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <div className="bg-[#ea580c] p-3.5 rounded-2xl text-white shadow-lg">
-                  <MessageSquare size={22} fill="white" />
-                </div>
-                <h3 className="text-xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">
-                  Opret SMS Kampagne
-                </h3>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="bg-[#ea580c] p-3.5 rounded-2xl text-white shadow-lg">
+                <MessageSquare size={22} fill="white" />
+              </div>
+              <h3 className="text-xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">
+                Send SMS Kampagne
+              </h3>
+            </div>
+
+            {/* TRIN 1: Vælg tilbudstype */}
+            <div className="space-y-3 mb-6">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none ml-1">
+                Hvad vil du tilbyde?
+              </p>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {offerTypes.map(({ type, icon, title, desc }) => (
+                  <button
+                    key={type}
+                    onClick={() => setOfferType(offerType === type ? null : type)}
+                    className={`flex flex-col items-center gap-2.5 p-5 rounded-2xl border-2 text-center transition-all ${
+                      offerType === type
+                        ? 'border-[#ea580c] bg-orange-50 text-[#ea580c]'
+                        : 'border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200 hover:text-slate-600'
+                    }`}
+                  >
+                    {icon}
+                    <span className="text-[10px] font-black uppercase tracking-widest leading-none">{title}</span>
+                    <span className="text-[9px] font-medium text-slate-400 leading-snug">{desc}</span>
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="bg-slate-50 rounded-[2rem] p-8 border border-slate-100 relative">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4 block ml-1 leading-none">
-                  Besked — brug {'{{Navn}}'} som personaliserings-tag
-                </label>
-                <textarea
-                  rows={4}
-                  value={smsText}
-                  onChange={(e) => setSmsText(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-2xl p-5 text-sm font-medium focus:ring-4 focus:ring-[#ea580c]/5 outline-none transition-all shadow-inner text-slate-700 leading-relaxed italic resize-none"
-                />
-                <div className="flex gap-2 mt-4 flex-wrap">
-                  {[
-                    { tag: 'Navn', label: 'Navn' },
-                    { tag: 'Yndlingspizza', label: 'Yndlingspizza' },
-                    { tag: 'DageSiden', label: 'Dage siden sidst' },
-                  ].map(({ tag, label }) => (
-                    <button
-                      key={tag}
-                      onClick={() => setSmsText((t) => t + ` {{${tag}}}`)}
-                      className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[9px] font-black text-slate-400 uppercase hover:border-[#ea580c] hover:text-[#ea580c] transition-all leading-none"
-                    >
-                      + {label}
-                    </button>
-                  ))}
-                </div>
-                <div className="flex gap-2 mt-3 flex-wrap items-center">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-300 leading-none mr-1">Rabat:</span>
-                  {[5, 10, 15, 20, 25, 30, 40, 45, 50].map((pct) => (
-                    <button
-                      key={pct}
-                      onClick={() => setSmsText((t) => t + ` {{Rabat${pct}}}`)}
-                      className="px-3 py-2 bg-green-50 border border-green-100 rounded-xl text-[9px] font-black text-green-600 uppercase hover:bg-green-100 hover:border-green-300 transition-all leading-none"
-                    >
-                      {pct}%
-                    </button>
-                  ))}
-                </div>
+            {/* TRIN 2: Udfyld detaljer */}
+            {offerType !== null && (
+              <div className="bg-slate-50 rounded-[2rem] p-6 border border-slate-100 space-y-5 mb-6">
 
-                <div className="flex gap-2 mt-3 flex-wrap items-center">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-300 leading-none mr-1">Eksklusivt:</span>
-                  <button
-                    onClick={() => setShowRescueForm((v) => !v)}
-                    className={`px-3 py-2 rounded-xl text-[9px] font-black uppercase transition-all leading-none border ${showRescueForm ? 'bg-orange-100 border-orange-300 text-[#ea580c]' : 'bg-orange-50 border-orange-100 text-[#ea580c] hover:bg-orange-100'}`}
-                  >
-                    Rednings-deal
-                  </button>
-                </div>
-
-                {showRescueForm && (
-                  <div className="mt-3 bg-orange-50 border border-orange-100 rounded-2xl p-4 flex flex-wrap gap-3 items-end">
-                    <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
-                      <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Ret</label>
-                      {menuItems.length > 0 && rescueItem !== '__custom__' ? (
-                        <select
-                          value={rescueItem}
-                          onChange={(e) => setRescueItem(e.target.value)}
-                          className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20"
+                {/* Rabat % vælger */}
+                {(offerType === 'rabat' || offerType === 'savner') && (
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 leading-none">
+                      Vælg rabat
+                    </p>
+                    <div className="flex gap-2 flex-wrap">
+                      {[10, 15, 20, 25, 30].map((pct) => (
+                        <button
+                          key={pct}
+                          onClick={() => setOfferPct(pct)}
+                          className={`px-5 py-2.5 rounded-xl text-[11px] font-black uppercase transition-all ${
+                            offerPct === pct
+                              ? 'bg-[#ea580c] text-white shadow-md'
+                              : 'bg-white border border-slate-200 text-slate-500 hover:border-[#ea580c] hover:text-[#ea580c]'
+                          }`}
                         >
-                          {Object.entries(
-                            menuItems.reduce<Record<string, typeof menuItems>>((acc, item) => {
-                              acc[item.category] = [...(acc[item.category] ?? []), item]
-                              return acc
-                            }, {})
-                          ).map(([cat, items]) => (
-                            <optgroup key={cat} label={cat}>
-                              {items.map((item) => (
-                                <option key={item.id} value={item.name}>
-                                  {item.name} ({item.price} kr.)
-                                </option>
-                              ))}
-                            </optgroup>
-                          ))}
-                          <option value="__custom__">Skriv selv...</option>
-                        </select>
-                      ) : (
-                        <input
-                          type="text"
-                          placeholder="fx Margherita"
-                          value={rescueItem === '__custom__' ? '' : rescueItem}
-                          onChange={(e) => setRescueItem(e.target.value)}
-                          className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20"
-                          autoFocus
-                        />
-                      )}
+                          {pct}%
+                        </button>
+                      ))}
                     </div>
-                    <div className="flex flex-col gap-1.5 w-20">
-                      <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Antal</label>
+                  </div>
+                )}
+
+                {/* Gratis ret vælger */}
+                {offerType === 'gratis' && (
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                        Gratis ret
+                      </p>
+                      <MenuItemPicker menuItems={menuItems} value={offerItem} onChange={setOfferItem} />
+                    </div>
+                    <div className="w-32">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                        Min. antal
+                      </p>
+                      <AntalStepper value={offerAntal} onChange={setOfferAntal} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Fejlbestilling vælger */}
+                {offerType === 'fejl' && (
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                        Hvilken ret?
+                      </p>
+                      <MenuItemPicker menuItems={menuItems} value={offerItem} onChange={setOfferItem} />
+                    </div>
+                    <div className="w-24">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                        Antal
+                      </p>
+                      <AntalStepper value={offerAntal} onChange={setOfferAntal} min={1} />
+                    </div>
+                    <div className="w-32">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                        Pris (kr.)
+                      </p>
                       <input
                         type="number"
                         min={1}
-                        placeholder="—"
-                        value={rescueAntal}
-                        onChange={(e) => setRescueAntal(e.target.value)}
-                        className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20 w-full"
+                        placeholder="fx 49"
+                        value={offerPris}
+                        onChange={(e) => setOfferPris(e.target.value)}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#ea580c]/20"
                       />
                     </div>
-                    <button
-                      onClick={() => {
-                        if (!rescueItem || rescueItem === '__custom__') return
-                        const tag = rescueAntal
-                          ? `{{RedningsDeal:${rescueItem}:${rescueAntal}}}`
-                          : `{{RedningsDeal:${rescueItem}}}`
-                        setSmsText((t) => t + ` ${tag}`)
-                        setShowRescueForm(false)
-                        setRescueAntal('')
-                      }}
-                      className="px-5 py-2 bg-[#ea580c] text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-orange-700 transition-all leading-none"
-                    >
-                      Tilføj
-                    </button>
+                  </div>
+                )}
+
+                {/* Dato-vare vælger */}
+                {offerType === 'dato' && (
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                        Hvilken ret?
+                      </p>
+                      <MenuItemPicker menuItems={menuItems} value={offerItem} onChange={setOfferItem} />
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                        Rabat
+                      </p>
+                      <div className="flex gap-2 flex-wrap">
+                        {[10, 15, 20, 25, 30].map((pct) => (
+                          <button
+                            key={pct}
+                            onClick={() => setOfferPct(pct)}
+                            className={`px-4 py-2.5 rounded-xl text-[11px] font-black uppercase transition-all ${
+                              offerPct === pct
+                                ? 'bg-[#ea580c] text-white shadow-md'
+                                : 'bg-white border border-slate-200 text-slate-500 hover:border-[#ea580c] hover:text-[#ea580c]'
+                            }`}
+                          >
+                            {pct}%
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Fri tekst */}
+                {offerType === 'fri' && (
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                      Din besked
+                    </p>
+                    <textarea
+                      rows={4}
+                      placeholder="Skriv din SMS her..."
+                      value={friTekst}
+                      onChange={(e) => setFriTekst(e.target.value)}
+                      className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm font-medium focus:ring-4 focus:ring-[#ea580c]/5 outline-none transition-all text-slate-700 leading-relaxed resize-none"
+                    />
+                  </div>
+                )}
+
+                {/* SMS Preview */}
+                {offerType !== 'fri' && (
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 leading-none">
+                      Forhåndsvisning
+                    </p>
+                    <div className="bg-white border border-slate-200 rounded-2xl p-4 text-sm text-slate-600 italic leading-relaxed">
+                      {generateSmsText()}
+                    </div>
+                    {offerType === 'savner' && (
+                      <p className="text-[10px] font-bold text-orange-500 mt-2 ml-1 leading-none italic">
+                        Sendes kun til kunder der ikke har bestilt i 60+ dage ({inactiveRecipients.length} kunder)
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Tags */}
+                {offerType !== null && (
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-slate-300 mb-2 leading-none">
+                      Tilpas med tags — klik for at tilføje til fri tekst
+                    </p>
+                    <div className="flex gap-2 flex-wrap">
+                      {[
+                        { tag: '{{Navn}}', label: 'Navn' },
+                        { tag: '{{Yndlingspizza}}', label: 'Yndlingspizza' },
+                        { tag: '{{DageSiden}}', label: 'Dage siden sidst' },
+                        { tag: '{{Rabat10}}', label: 'Rabat 10%' },
+                        { tag: '{{Rabat15}}', label: 'Rabat 15%' },
+                        { tag: '{{Rabat20}}', label: 'Rabat 20%' },
+                      ].map(({ tag, label }) => (
+                        <button
+                          key={tag}
+                          onClick={() => {
+                            const base = offerType !== 'fri' ? generateSmsText() + ' ' : friTekst + ' '
+                            setFriTekst(base + tag)
+                            setOfferType('fri')
+                          }}
+                          className="px-3 py-1.5 bg-slate-50 border border-slate-100 rounded-xl text-[9px] font-black text-slate-400 uppercase tracking-widest hover:border-[#ea580c] hover:text-[#ea580c] transition-all leading-none"
+                        >
+                          + {label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
+            )}
 
-              {segment === 'inactive' && (
-                <div className="flex items-center justify-between bg-orange-50 border border-orange-100 rounded-2xl px-5 py-3">
-                  <p className="text-[11px] font-black text-[#ea580c] italic uppercase tracking-widest leading-none">
-                    Målgruppe: {inactiveRecipients.length} inaktive kunder
-                  </p>
-                  <button
-                    onClick={() => setSegment('all')}
-                    className="text-[10px] font-black text-slate-400 hover:text-slate-700 uppercase tracking-widest transition-colors leading-none"
-                  >
-                    Skift til alle →
-                  </button>
+            {/* SEND */}
+            <div className="flex flex-col md:flex-row gap-6 justify-between items-center">
+              <div className="flex items-center gap-4">
+                <div className="flex -space-x-3">
+                  {[0, 1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="w-10 h-10 rounded-full border-4 border-white bg-slate-200 flex items-center justify-center text-[11px] font-black text-slate-400"
+                    >
+                      {i + 1}
+                    </div>
+                  ))}
                 </div>
-              )}
-
-              {/\{\{Rabat\d+\}\}/.test(smsText) && (
-                <div className="flex items-start gap-3 bg-green-50 border border-green-100 rounded-2xl px-5 py-3">
-                  <span className="text-green-500 text-sm shrink-0">💰</span>
-                  <p className="text-[11px] font-bold text-green-700 italic leading-relaxed">
-                    Rabatten beregnes automatisk i kr. per kunde — baseret på gennemsnitligt ordrebeløb. Kunder uden ordrehistorik modtager butikkens gennemsnit.
-                  </p>
-                </div>
-              )}
-
-              {smsText.includes('{{Yndlingspizza}}') && (
-                <div className="flex items-start gap-3 bg-amber-50 border border-amber-100 rounded-2xl px-5 py-3">
-                  <span className="text-amber-500 text-sm shrink-0">⚠️</span>
-                  <p className="text-[11px] font-bold text-amber-700 italic leading-relaxed">
-                    Kunder uden ordrehistorik modtager automatisk butikkens mest populære ret som yndlingspizza.
-                  </p>
-                </div>
-              )}
-
-              {sentFallback && (
-                <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-3">
-                  <span className="text-blue-500 text-sm shrink-0">ℹ️</span>
-                  <p className="text-[11px] font-bold text-blue-700 italic leading-relaxed">
-                    {sentFallback.count} kunde{sentFallback.count !== 1 ? 'r' : ''} fik &quot;{sentFallback.item}&quot; som yndlingspizza (ingen ordrehistorik).
-                  </p>
-                </div>
-              )}
-
-              <div className="flex flex-col md:flex-row gap-6 justify-between items-center">
-                <div className="flex items-center gap-4">
-                  <div className="flex -space-x-3">
-                    {[0, 1, 2].map((i) => (
-                      <div
-                        key={i}
-                        className="w-10 h-10 rounded-full border-4 border-white bg-slate-200 flex items-center justify-center text-[11px] font-black text-slate-400"
-                      >
-                        {i + 1}
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-[11px] font-bold text-slate-400 uppercase italic leading-none">
-                    Sendes til {activeRecipients.length} {segment === 'inactive' ? 'inaktive' : 'tilmeldte'}
-                  </p>
-                </div>
-                <button
-                  onClick={handleSend}
-                  disabled={sending || !smsText.trim() || activeRecipients.length === 0}
-                  className="bg-slate-900 text-white px-10 py-5 rounded-[1.8rem] font-black text-xs uppercase tracking-[0.2em] italic hover:bg-[#ea580c] transition-all shadow-2xl flex items-center gap-4 group disabled:opacity-40"
-                >
-                  {sent ? '✓ SENDT!' : sending ? 'SENDER...' : (
-                    <>UDSEND KAMPAGNE <Send size={18} className="group-hover:translate-x-1 transition-transform" /></>
-                  )}
-                </button>
+                <p className="text-[11px] font-bold text-slate-400 uppercase italic leading-none">
+                  Sendes til {activeRecipients.length} {segment === 'inactive' ? 'inaktive' : 'tilmeldte'}
+                </p>
               </div>
+              <button
+                onClick={handleSend}
+                disabled={sending || offerType === null || activeRecipients.length === 0 || (offerType === 'fri' && !friTekst.trim())}
+                className="bg-slate-900 text-white px-10 py-5 rounded-[1.8rem] font-black text-xs uppercase tracking-[0.2em] italic hover:bg-[#ea580c] transition-all shadow-2xl flex items-center gap-4 group disabled:opacity-40"
+              >
+                {sent ? '✓ SENDT!' : sending ? 'SENDER...' : (
+                  <>UDSEND KAMPAGNE <Send size={18} className="group-hover:translate-x-1 transition-transform" /></>
+                )}
+              </button>
             </div>
           </section>
 
@@ -508,16 +688,15 @@ export default function KundeklubPage() {
               </h4>
             </div>
             <p className="text-[13px] font-bold italic text-slate-600 leading-relaxed">
-              {customers.filter((c) => ['Inaktiv', 'Ny'].includes(getCustomerStatus(c.order_count, c.last_order_at))).length > 0
-                ? `Du har ${customers.filter((c) => ['Inaktiv', 'Ny'].includes(getCustomerStatus(c.order_count, c.last_order_at))).length} inaktive eller nye kunder. Skal jeg sende dem et tilbud?`
+              {inactiveRecipients.length > 0
+                ? `Du har ${inactiveRecipients.length} inaktive kunder. Skal jeg sende dem et tilbud?`
                 : 'Dine kunder er aktive. Overvej en kampagne for at booste omsætningen i weekenden.'}
             </p>
             <button
               onClick={() => {
-                setSmsText(`Hej {{Navn}}! Det er længe siden vi har set dig. Som tak for din loyalitet giver vi dig 15% rabat på din næste bestilling i aften. Svar JA for at bestille.`)
-                setSegment('inactive')
-                document.querySelector('textarea')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                document.querySelector('textarea')?.focus()
+                setOfferType('savner')
+                setOfferPct(15)
+                document.querySelector('section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
               }}
               className="mt-5 text-[10px] font-black uppercase tracking-widest text-[#ea580c] underline decoration-2 underline-offset-8 hover:text-orange-700 transition-all leading-none block"
             >
