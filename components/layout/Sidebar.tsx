@@ -251,7 +251,7 @@ export function Sidebar({ tenant }: SidebarProps) {
             className="w-full flex items-center justify-center gap-2 py-1.5 rounded-md hover:bg-orange-500/10 transition-colors group"
           >
             <PhoneCall size={11} className="text-orange-400" />
-            <span className="text-[9px] font-bold text-orange-200 group-hover:text-white transition-colors">
+            <span className="text-[9px] font-bold text-orange-400 group-hover:text-white transition-colors">
               +45 21 74 98 72
             </span>
           </a>
@@ -260,7 +260,7 @@ export function Sidebar({ tenant }: SidebarProps) {
             className="w-full flex items-center justify-center gap-2 py-1.5 rounded-md hover:bg-orange-500/10 transition-colors group"
           >
             <Mail size={11} className="text-orange-400" />
-            <span className="text-[9px] font-bold text-orange-200 group-hover:text-white transition-colors">
+            <span className="text-[9px] font-bold text-orange-400 group-hover:text-white transition-colors">
               help@getmait.dk
             </span>
           </a>
