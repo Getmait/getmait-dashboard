@@ -274,13 +274,10 @@ export default async function DashboardPage({
                     </div>
                     <div className="flex items-center gap-8 text-right shrink-0">
                       <div className="text-right leading-none">
-                        <p className="font-black text-sm italic leading-none mb-1 text-[#ea580c]">
+                        <p className="font-black text-sm italic leading-none text-[#ea580c]">
                           {order.total_pris
                             ? `${Number(order.total_pris).toLocaleString('da-DK')} kr.`
                             : '—'}
-                        </p>
-                        <p className="text-[8px] font-black text-green-600 uppercase italic tracking-widest leading-none">
-                          {order.status === 'modtaget' ? 'Sendt til køkken' : order.status}
                         </p>
                       </div>
                       <div className="text-[9px] font-black text-slate-300 uppercase italic whitespace-nowrap leading-none">
