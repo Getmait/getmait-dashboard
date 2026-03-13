@@ -577,7 +577,11 @@ export default function SettingsPage() {
             <ShieldCheck size={14} className="text-[#ea580c]" />
             <span className="text-[10px] font-black uppercase tracking-widest italic">Sikker datahåndtering</span>
           </div>
-          <span className="text-[10px] font-black uppercase tracking-widest italic">Support: help@getmait.dk</span>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-black uppercase tracking-widest italic">Support: help@getmait.dk</span>
+            <span className="text-slate-600">·</span>
+            <span className="text-[10px] font-black uppercase tracking-widest italic">+45 21 74 98 72</span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-[8px] font-black uppercase tracking-[0.5em] italic">GetMait Partner Portal</span>
