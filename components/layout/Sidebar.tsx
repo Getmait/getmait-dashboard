@@ -20,6 +20,7 @@ import {
   LogOut,
   UtensilsCrossed,
   PhoneCall,
+  Mail,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -238,6 +239,31 @@ export function Sidebar({ tenant }: SidebarProps) {
             </p>
           </div>
           <UtensilsCrossed className="absolute -bottom-6 -right-6 w-20 h-20 opacity-5 -rotate-12" />
+        </div>
+
+        {/* Support */}
+        <div className="w-full rounded-lg border border-orange-500/20 bg-orange-500/5 p-2.5 mb-1 space-y-1.5">
+          <p className="text-center text-[8px] font-black uppercase tracking-widest italic text-orange-400 mb-2">
+            Support
+          </p>
+          <a
+            href="tel:+4521749872"
+            className="w-full flex items-center justify-center gap-2 py-1.5 rounded-md hover:bg-orange-500/10 transition-colors group"
+          >
+            <PhoneCall size={11} className="text-orange-400" />
+            <span className="text-[9px] font-bold text-orange-400 group-hover:text-white transition-colors">
+              +45 21 74 98 72
+            </span>
+          </a>
+          <a
+            href="mailto:help@getmait.dk"
+            className="w-full flex items-center justify-center gap-2 py-1.5 rounded-md hover:bg-orange-500/10 transition-colors group"
+          >
+            <Mail size={11} className="text-orange-400" />
+            <span className="text-[9px] font-bold text-orange-400 group-hover:text-white transition-colors">
+              help@getmait.dk
+            </span>
+          </a>
         </div>
 
         {/* Log ud */}
