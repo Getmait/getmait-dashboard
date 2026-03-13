@@ -240,6 +240,17 @@ export function Sidebar({ tenant }: SidebarProps) {
           <UtensilsCrossed className="absolute -bottom-6 -right-6 w-20 h-20 opacity-5 -rotate-12" />
         </div>
 
+        {/* Support */}
+        <a
+          href="tel:+4521749872"
+          className="w-full flex items-center justify-center gap-2 py-2 mb-1 rounded-lg bg-slate-800/60 hover:bg-orange-500/10 border border-slate-700/50 hover:border-orange-500/30 transition-all group"
+        >
+          <PhoneCall size={11} className="text-orange-400 group-hover:text-orange-300" />
+          <span className="text-[9px] font-black uppercase italic tracking-widest text-slate-400 group-hover:text-orange-300 transition-colors">
+            Support: +45 21 74 98 72
+          </span>
+        </a>
+
         {/* Log ud */}
         <button
           onClick={handleLogout}
