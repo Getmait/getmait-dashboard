@@ -4,7 +4,6 @@ import {
   PhoneCall,
   Clock,
   Activity,
-  AlertCircle,
   Mic2,
   Volume2,
   Headphones,
@@ -104,12 +103,6 @@ export default async function VoicePage({
       value: `${automationsgrad}%`,
       icon: Activity,
       sub: 'Bestillinger klaret af AI',
-    },
-    {
-      label: 'Missede Opkald',
-      value: '—',
-      icon: AlertCircle,
-      sub: 'Ikke målt endnu',
     },
   ]
 

@@ -29,6 +29,7 @@ interface TopBarProps {
 export function TopBar({ tenant, userEmail }: TopBarProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const tenantSlug = pathname.split('/')[1]
   const segment = pathname.split('/').pop() ?? 'dashboard'
   const pageLabel = LABELS[segment] ?? segment
 
@@ -60,7 +61,10 @@ export function TopBar({ tenant, userEmail }: TopBarProps) {
             <p className="text-xs text-slate-500 truncate">{userEmail}</p>
           </div>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className="gap-2 cursor-pointer">
+          <DropdownMenuItem
+            className="gap-2 cursor-pointer"
+            onClick={() => router.push(`/${tenantSlug}/settings`)}
+          >
             <User size={14} /> Profil
           </DropdownMenuItem>
           <DropdownMenuSeparator />

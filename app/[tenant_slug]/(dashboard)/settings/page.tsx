@@ -368,7 +368,6 @@ export default function SettingsPage() {
                         className={`${inputClass} opacity-50 cursor-not-allowed`}
                       />
                     </div>
-                    <p className="text-[10px] text-slate-400 italic ml-2">Email skiftes under Sikkerhed</p>
                   </div>
                   <div className="md:col-span-2 pt-2">
                     <button type="submit" disabled={isSaving} className={submitBtn}>
