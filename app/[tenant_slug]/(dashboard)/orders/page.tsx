@@ -109,7 +109,7 @@ export default async function OrdersPage({
 
       {/* HEADER */}
       <div>
-        <h2 className="text-3xl font-black italic uppercase tracking-tighter text-slate-800 leading-none">
+        <h2 className="text-3xl font-black uppercase tracking-tighter text-slate-800 leading-none">
           Bestillinger
         </h2>
         <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-2 leading-none">
@@ -132,10 +132,10 @@ export default async function OrdersPage({
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 leading-none">
               {stat.label}
             </p>
-            <h3 className="text-3xl font-black text-slate-900 italic tracking-tighter leading-none mb-1">
+            <h3 className="text-3xl font-black text-slate-900 tracking-tighter leading-none mb-1">
               {stat.value}
             </h3>
-            <p className="text-[9px] font-bold text-slate-300 uppercase italic leading-none">
+            <p className="text-[9px] font-bold text-slate-300 uppercase leading-none">
               {stat.sub}
             </p>
           </div>
@@ -149,10 +149,10 @@ export default async function OrdersPage({
             <ShoppingBag size={22} />
           </div>
           <div>
-            <h3 className="text-lg font-black italic uppercase leading-none mb-1">
+            <h3 className="text-lg font-black uppercase leading-none mb-1">
               Alle Bestillinger
             </h3>
-            <p className="text-[9px] font-bold text-slate-300 uppercase italic leading-none">
+            <p className="text-[9px] font-bold text-slate-300 uppercase leading-none">
               {alle.length} ordre{alle.length !== 1 ? 'r' : ''} i alt
             </p>
           </div>
@@ -161,7 +161,7 @@ export default async function OrdersPage({
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-[0.2em] italic border-b border-slate-100">
+              <tr className="bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-[0.2em] border-b border-slate-100">
                 <th className="px-8 py-5">Kunde</th>
                 <th className="px-6 py-5">Bestilling</th>
                 <th className="px-6 py-5">Levering / Adresse</th>
@@ -172,7 +172,7 @@ export default async function OrdersPage({
             <tbody className="divide-y divide-slate-50">
               {alle.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-8 py-16 text-center text-slate-300 font-semibold italic">
+                  <td colSpan={5} className="px-8 py-16 text-center text-slate-300 font-semibold">
                     Ingen bestillinger endnu
                   </td>
                 </tr>
@@ -195,7 +195,7 @@ export default async function OrdersPage({
                           <User size={18} />
                         </div>
                         <div className="flex flex-col gap-0.5">
-                          <span className="text-sm font-black uppercase italic text-slate-800 leading-none">
+                          <span className="text-sm font-black uppercase text-slate-800 leading-none">
                             {order.kunde_navn ?? order.kunde_tlf ?? 'Anonym'}
                           </span>
                           {order.kunde_tlf && order.kunde_navn && (
@@ -207,7 +207,7 @@ export default async function OrdersPage({
                       </div>
                     </td>
                     <td className="px-6 py-5 max-w-xs">
-                      <p className="text-[11px] font-bold text-slate-500 italic leading-snug truncate">
+                      <p className="text-[11px] font-bold text-slate-500 leading-snug truncate">
                         {parseOrdreDetaljer(order.ordre_detaljer, menuNrMap)}
                       </p>
                     </td>
@@ -218,7 +218,7 @@ export default async function OrdersPage({
                             <Truck size={11} /> Levering
                           </span>
                           {order.delivery_address && (
-                            <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 italic leading-none">
+                            <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 leading-none">
                               <MapPin size={10} className="shrink-0" />
                               {order.delivery_address}
                             </span>
@@ -231,14 +231,14 @@ export default async function OrdersPage({
                       )}
                     </td>
                     <td className="px-6 py-5 text-right">
-                      <span className="text-sm font-black italic text-[#ea580c] leading-none">
+                      <span className="text-sm font-black text-[#ea580c] leading-none">
                         {order.total_pris
                           ? `${Number(order.total_pris).toLocaleString('da-DK')} kr.`
                           : '—'}
                       </span>
                     </td>
                     <td className="px-8 py-5 text-right">
-                      <span className="text-[9px] font-black text-slate-300 uppercase italic whitespace-nowrap leading-none">
+                      <span className="text-[9px] font-black text-slate-300 uppercase whitespace-nowrap leading-none">
                         {tidLabel}
                       </span>
                     </td>
@@ -256,10 +256,10 @@ export default async function OrdersPage({
           <CheckCircle2 size={24} className="text-white" />
         </div>
         <div>
-          <h4 className="text-base font-black uppercase italic tracking-tighter mb-1 text-orange-500 leading-none">
+          <h4 className="text-base font-black uppercase tracking-tighter mb-1 text-orange-500 leading-none">
             Automatisk Ordrestyring
           </h4>
-          <p className="text-slate-400 font-medium italic text-xs max-w-lg leading-relaxed">
+          <p className="text-slate-400 font-medium text-xs max-w-lg leading-relaxed">
             Alle bestillinger herover er modtaget og håndteret af Mait AI — uden at du behøvede at løfte en finger.
           </p>
         </div>

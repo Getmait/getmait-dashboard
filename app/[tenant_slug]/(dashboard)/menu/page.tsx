@@ -136,10 +136,10 @@ export default function MenuPage() {
 
       {/* Header */}
       <div>
-        <h2 className="text-4xl font-black italic uppercase tracking-tighter text-slate-800 leading-none">
+        <h2 className="text-4xl font-black uppercase tracking-tighter text-slate-800 leading-none">
           Menu
         </h2>
-        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] italic mt-1">
+        <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-1">
           {menuItems.length} retter · {menuItems.filter(i => i.tilgaengelig).length} aktive
         </p>
       </div>
@@ -149,7 +149,7 @@ export default function MenuPage() {
         {isAddingItem ? (
           <div>
             <div className="flex justify-between items-center mb-8">
-              <h3 className="text-base font-black uppercase italic text-[#ea580c] flex items-center gap-2 leading-none">
+              <h3 className="text-base font-black uppercase text-[#ea580c] flex items-center gap-2 leading-none">
                 <Plus size={20} /> Tilføj ny ret
               </h3>
               <button onClick={() => setIsAddingItem(false)} className="text-slate-300 hover:text-slate-900 transition-colors">
@@ -158,30 +158,30 @@ export default function MenuPage() {
             </div>
             <form onSubmit={addItem} className="grid grid-cols-1 md:grid-cols-5 gap-6">
               <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 italic block leading-none">Nr.</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 block leading-none">Nr.</label>
                 <input
                   type="text"
                   placeholder="F.eks. 52"
-                  className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#ea580c]/30 outline-none italic"
+                  className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#ea580c]/30 outline-none"
                   value={newItem.nr}
                   onChange={(e) => setNewItem({ ...newItem, nr: e.target.value })}
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 italic block leading-none">Navn</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 block leading-none">Navn</label>
                 <input
                   required
                   type="text"
                   placeholder="F.eks. Hawaii Pizza"
-                  className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#ea580c]/30 outline-none italic"
+                  className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#ea580c]/30 outline-none"
                   value={newItem.name}
                   onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 italic block leading-none">Kategori</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 block leading-none">Kategori</label>
                 <select
-                  className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#ea580c]/30 outline-none appearance-none italic"
+                  className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#ea580c]/30 outline-none appearance-none"
                   value={newItem.category}
                   onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
                 >
@@ -191,22 +191,22 @@ export default function MenuPage() {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 italic block leading-none">Pris (kr.)</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 block leading-none">Pris (kr.)</label>
                 <input
                   required
                   type="number"
                   placeholder="85"
-                  className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#ea580c]/30 outline-none italic"
+                  className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#ea580c]/30 outline-none"
                   value={newItem.price}
                   onChange={(e) => setNewItem({ ...newItem, price: e.target.value })}
                 />
               </div>
               <div className="md:col-span-4 space-y-2">
-                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 italic block leading-none">Beskrivelse (valgfri)</label>
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1 block leading-none">Beskrivelse (valgfri)</label>
                 <input
                   type="text"
                   placeholder="Kort beskrivelse af retten..."
-                  className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#ea580c]/30 outline-none italic"
+                  className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-2 focus:ring-[#ea580c]/30 outline-none"
                   value={newItem.description}
                   onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
                 />
@@ -215,7 +215,7 @@ export default function MenuPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] italic hover:bg-[#ea580c] transition-all shadow-xl leading-none disabled:opacity-60"
+                  className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-[#ea580c] transition-all shadow-xl leading-none disabled:opacity-60"
                 >
                   {saving ? 'Gemmer...' : 'Gem'}
                 </button>
@@ -230,7 +230,7 @@ export default function MenuPage() {
             <div className="p-2 bg-slate-50 rounded-xl group-hover:bg-orange-50 group-hover:scale-110 transition-all">
               <Plus size={24} />
             </div>
-            <span className="text-sm font-black uppercase tracking-[0.25em] italic leading-none">
+            <span className="text-sm font-black uppercase tracking-[0.25em] leading-none">
               Tilføj ny ret
             </span>
           </button>
@@ -244,7 +244,7 @@ export default function MenuPage() {
           <input
             type="text"
             placeholder="Søg på navn, nummer..."
-            className="w-full bg-white border border-slate-200 rounded-[1.5rem] pl-14 pr-6 py-4 text-xs font-bold focus:ring-4 focus:ring-orange-50 outline-none uppercase tracking-widest shadow-sm italic"
+            className="w-full bg-white border border-slate-200 rounded-[1.5rem] pl-14 pr-6 py-4 text-xs font-bold focus:ring-4 focus:ring-orange-50 outline-none uppercase tracking-widest shadow-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -254,7 +254,7 @@ export default function MenuPage() {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest italic transition-all ${
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
                 activeCategory === cat
                   ? 'bg-[#ea580c] text-white shadow-md'
                   : 'bg-white border border-slate-200 text-slate-500 hover:border-[#ea580c]/40 hover:text-[#ea580c]'
@@ -271,7 +271,7 @@ export default function MenuPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-[0.25em] italic border-b border-slate-100">
+              <tr className="bg-slate-50 text-slate-400 text-[9px] font-black uppercase tracking-[0.25em] border-b border-slate-100">
                 <th className="px-10 py-6">Ret / Beskrivelse</th>
                 <th className="px-6 py-6">Kategori</th>
                 <th className="px-6 py-6">Status</th>
@@ -287,18 +287,18 @@ export default function MenuPage() {
                 >
                   <td className="px-10 py-7">
                     <div className="flex flex-col gap-1">
-                      <span className="text-lg font-black uppercase italic tracking-tighter text-slate-800 leading-none">
+                      <span className="text-lg font-black uppercase tracking-tighter text-slate-800 leading-none">
                         {item.nr ? `${item.nr}. ` : ''}{item.navn}
                       </span>
                       {item.beskrivelse && (
-                        <span className="text-[11px] font-medium text-slate-400 italic max-w-xs truncate">
+                        <span className="text-[11px] font-medium text-slate-400 max-w-xs truncate">
                           {item.beskrivelse}
                         </span>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-7">
-                    <span className="text-[10px] font-black uppercase bg-slate-100 px-3 py-1.5 rounded-xl text-slate-500 tracking-widest italic">
+                    <span className="text-[10px] font-black uppercase bg-slate-100 px-3 py-1.5 rounded-xl text-slate-500 tracking-widest">
                       {item.kategori ?? '—'}
                     </span>
                   </td>
@@ -312,13 +312,13 @@ export default function MenuPage() {
                           ? <ToggleRight size={44} strokeWidth={1.2} />
                           : <ToggleLeft size={44} strokeWidth={1.2} />}
                       </button>
-                      <span className="text-[10px] font-black uppercase italic text-slate-600 tracking-widest">
+                      <span className="text-[10px] font-black uppercase text-slate-600 tracking-widest">
                         {item.tilgaengelig ? 'Aktiv' : 'Inaktiv'}
                       </span>
                     </div>
                   </td>
                   <td className="px-6 py-7 text-right">
-                    <span className="text-lg font-black italic text-[#ea580c] leading-none">
+                    <span className="text-lg font-black text-[#ea580c] leading-none">
                       {item.pris} kr.
                     </span>
                   </td>
@@ -338,7 +338,7 @@ export default function MenuPage() {
           {filteredMenu.length === 0 && (
             <div className="py-24 text-center">
               <UtensilsCrossed size={48} className="mx-auto mb-4 text-slate-200" />
-              <p className="text-slate-300 font-black uppercase italic tracking-[0.3em] text-xs">
+              <p className="text-slate-300 font-black uppercase tracking-[0.3em] text-xs">
                 {menuItems.length === 0 ? 'Ingen retter tilføjet endnu...' : 'Ingen retter matcher søgningen...'}
               </p>
             </div>
@@ -353,10 +353,10 @@ export default function MenuPage() {
             <Zap size={32} className="fill-white" />
           </div>
           <div>
-            <h4 className="text-2xl font-black uppercase italic tracking-tighter mb-2 text-[#ea580c] leading-none">
+            <h4 className="text-2xl font-black uppercase tracking-tighter mb-2 text-[#ea580c] leading-none">
               Mait AI Opdateres Live
             </h4>
-            <p className="text-slate-400 font-medium italic text-sm max-w-xl leading-relaxed">
+            <p className="text-slate-400 font-medium text-sm max-w-xl leading-relaxed">
               Når du deaktiverer en ret eller ændrer prisen her, lærer din Mait-assistent det øjeblikkeligt og informerer automatisk kunderne.
             </p>
           </div>
