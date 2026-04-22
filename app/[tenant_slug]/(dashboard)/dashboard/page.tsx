@@ -163,10 +163,10 @@ export default async function DashboardPage({
             <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 leading-none">
               {stat.label}
             </p>
-            <h3 className="text-3xl font-black text-slate-900 italic tracking-tighter leading-none mb-1">
+            <h3 className="text-3xl font-black text-slate-900 tracking-tighter leading-none mb-1">
               {stat.value}
             </h3>
-            <p className="text-[9px] font-bold text-slate-300 uppercase italic leading-none">
+            <p className="text-[9px] font-bold text-slate-300 uppercase leading-none">
               {stat.description}
             </p>
           </div>
@@ -185,7 +185,7 @@ export default async function DashboardPage({
                 <div className="bg-[#ea580c] p-3 rounded-2xl text-white shadow-lg shadow-orange-100">
                   <Smartphone size={22} />
                 </div>
-                <h2 className="text-xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">
+                <h2 className="text-xl font-black uppercase tracking-tighter text-slate-800 leading-none">
                   Kundeklub
                 </h2>
               </div>
@@ -198,15 +198,15 @@ export default async function DashboardPage({
             </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="p-6 rounded-[2rem] bg-slate-50 border border-slate-100 text-center">
-                <p className="text-3xl font-black italic text-slate-900 leading-none mb-2">{alleKunder.length}</p>
+                <p className="text-3xl font-black text-slate-900 leading-none mb-2">{alleKunder.length}</p>
                 <p className="text-[9px] font-black uppercase text-slate-400 leading-none">Kunder i alt</p>
               </div>
               <div className="p-6 rounded-[2rem] bg-orange-50 border border-orange-100 text-center">
-                <p className="text-3xl font-black italic text-[#ea580c] leading-none mb-2">{smsKunder}</p>
+                <p className="text-3xl font-black text-[#ea580c] leading-none mb-2">{smsKunder}</p>
                 <p className="text-[9px] font-black uppercase text-slate-400 leading-none">SMS-tilmeldte</p>
               </div>
               <div className="p-6 rounded-[2rem] bg-slate-50 border border-slate-100 text-center">
-                <p className="text-3xl font-black italic text-slate-900 leading-none mb-2">
+                <p className="text-3xl font-black text-slate-900 leading-none mb-2">
                   {alleKunder.length > 0 ? Math.round((smsKunder / alleKunder.length) * 100) : 0}%
                 </p>
                 <p className="text-[9px] font-black uppercase text-slate-400 leading-none">Tilmeldingsrate</p>
@@ -221,7 +221,7 @@ export default async function DashboardPage({
                 <div className="bg-slate-100 p-3 rounded-2xl text-slate-900 shadow-sm">
                   <Clock size={22} />
                 </div>
-                <h2 className="text-xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">
+                <h2 className="text-xl font-black uppercase tracking-tighter text-slate-800 leading-none">
                   Seneste Bestillinger
                 </h2>
               </div>
@@ -235,7 +235,7 @@ export default async function DashboardPage({
 
             <div className="space-y-3">
               {seneste.length === 0 && (
-                <p className="text-sm text-slate-400 italic text-center py-8">
+                <p className="text-sm text-slate-400 text-center py-8">
                   Ingen bestillinger endnu
                 </p>
               )}
@@ -260,30 +260,27 @@ export default async function DashboardPage({
                       </div>
                       <div className="leading-none">
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="text-sm font-black uppercase italic leading-none text-slate-800">
+                          <p className="text-sm font-black uppercase leading-none text-slate-800">
                             {order.kunde_navn ?? order.kunde_tlf ?? 'Anonym'}
                           </p>
                           <span className="text-[8px] font-bold text-slate-300 uppercase leading-none">
                             #{order.id}
                           </span>
                         </div>
-                        <p className="text-[10px] text-slate-500 font-bold italic tracking-tight leading-none max-w-xs truncate">
+                        <p className="text-[10px] text-slate-500 font-bold tracking-tight leading-none max-w-xs truncate">
                           {parseOrdreDetaljer(order.ordre_detaljer)}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-8 text-right shrink-0">
                       <div className="text-right leading-none">
-                        <p className="font-black text-sm italic leading-none mb-1 text-[#ea580c]">
+                        <p className="font-black text-sm leading-none text-[#ea580c]">
                           {order.total_pris
                             ? `${Number(order.total_pris).toLocaleString('da-DK')} kr.`
                             : '—'}
                         </p>
-                        <p className="text-[8px] font-black text-green-600 uppercase italic tracking-widest leading-none">
-                          {order.status === 'modtaget' ? 'Sendt til køkken' : order.status}
-                        </p>
                       </div>
-                      <div className="text-[9px] font-black text-slate-300 uppercase italic whitespace-nowrap leading-none">
+                      <div className="text-[9px] font-black text-slate-300 uppercase whitespace-nowrap leading-none">
                         {tidLabel}
                       </div>
                     </div>
@@ -301,21 +298,21 @@ export default async function DashboardPage({
           <div className="bg-[#0F172A] rounded-[3rem] p-10 text-white relative overflow-hidden flex flex-col justify-between shadow-2xl min-h-[400px]">
             <div className="relative z-10">
               <Sparkles className="text-orange-500 mb-6" size={32} />
-              <h3 className="text-3xl font-black italic uppercase tracking-tighter leading-none mb-4">
+              <h3 className="text-3xl font-black uppercase tracking-tighter leading-none mb-4">
                 Mait Indsigt
               </h3>
-              <p className="text-slate-400 text-sm font-medium italic leading-relaxed">
+              <p className="text-slate-400 text-sm font-medium leading-relaxed">
                 &ldquo;{aiIndsigt}&rdquo;
               </p>
             </div>
             <div className="relative z-10 space-y-4 mt-12">
               <div className="grid grid-cols-2 gap-2">
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                  <p className="text-2xl font-black italic text-orange-500 leading-none">{alle.length}</p>
+                  <p className="text-2xl font-black text-orange-500 leading-none">{alle.length}</p>
                   <p className="text-[9px] font-black uppercase text-slate-500 mt-1 leading-none">Ordrer i alt</p>
                 </div>
                 <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
-                  <p className="text-2xl font-black italic text-orange-500 leading-none">{leveringPct}%</p>
+                  <p className="text-2xl font-black text-orange-500 leading-none">{leveringPct}%</p>
                   <p className="text-[9px] font-black uppercase text-slate-500 mt-1 leading-none">Vælger levering</p>
                 </div>
               </div>
@@ -335,7 +332,7 @@ export default async function DashboardPage({
               <div className="flex justify-between items-end leading-none">
                 <div className="leading-none">
                   <span className="text-[9px] font-black text-slate-400 uppercase block mb-1 leading-none">Konvertering</span>
-                  <span className="text-base font-black italic text-[#ea580c] leading-none">{konvertering}%</span>
+                  <span className="text-base font-black text-[#ea580c] leading-none">{konvertering}%</span>
                 </div>
                 <span className="text-[9px] font-bold text-orange-500 uppercase leading-none">
                   {konvertering >= 80 ? 'Høj' : konvertering >= 50 ? 'Middel' : 'Lav'}
@@ -344,14 +341,14 @@ export default async function DashboardPage({
               <div className="flex justify-between items-end leading-none">
                 <div className="leading-none">
                   <span className="text-[9px] font-black text-slate-400 uppercase block mb-1 leading-none">Levering</span>
-                  <span className="text-base font-black italic text-slate-900 leading-none">{leveringAntal} ordrer</span>
+                  <span className="text-base font-black text-slate-900 leading-none">{leveringAntal} ordrer</span>
                 </div>
                 <span className="text-[9px] font-bold text-slate-400 uppercase leading-none">{leveringPct}%</span>
               </div>
               <div className="flex justify-between items-end leading-none">
                 <div className="leading-none">
                   <span className="text-[9px] font-black text-slate-400 uppercase block mb-1 leading-none">Total ordrer</span>
-                  <span className="text-base font-black italic text-slate-900 leading-none">{alle.length}</span>
+                  <span className="text-base font-black text-slate-900 leading-none">{alle.length}</span>
                 </div>
                 <span className="text-[9px] font-bold text-slate-400 uppercase leading-none">Alle tider</span>
               </div>
