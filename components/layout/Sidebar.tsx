@@ -99,7 +99,7 @@ export function Sidebar({ tenant }: SidebarProps) {
           <Zap size={18} className="text-white fill-white" />
         </div>
         <div>
-          <span className="text-base font-black tracking-tighter uppercase italic text-slate-800 block leading-none">GetMait</span>
+          <span className="text-base font-black tracking-tighter uppercase text-slate-800 block leading-none">GetMait</span>
           <span className="text-[8px] font-black text-[#ea580c] uppercase tracking-widest">Partner Portal</span>
         </div>
       </div>
@@ -119,7 +119,7 @@ export function Sidebar({ tenant }: SidebarProps) {
               key={href}
               href={href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-black uppercase italic tracking-wide transition-all',
+                'flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wide transition-all',
                 active
                   ? 'bg-[#ea580c]/10 text-[#ea580c] border border-[#ea580c]/10'
                   : 'text-slate-400 hover:bg-slate-50 hover:text-[#1a1a2e]'
@@ -139,10 +139,10 @@ export function Sidebar({ tenant }: SidebarProps) {
         <div className="bg-white border border-slate-200 rounded-[1.5rem] p-4 shadow-sm">
           <div className="flex items-center gap-1.5 mb-3">
             <Clock size={12} className="text-[#ea580c]" />
-            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 italic">Live Ventetid</span>
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Live Ventetid</span>
           </div>
           <div className="flex items-center justify-between mb-3">
-            <div className="text-2xl font-black italic tracking-tighter text-slate-800 leading-none">
+            <div className="text-2xl font-black tracking-tighter text-slate-800 leading-none">
               {waitTime} <span className="text-xs uppercase text-slate-400">min</span>
             </div>
             <button
@@ -158,7 +158,7 @@ export function Sidebar({ tenant }: SidebarProps) {
             className="w-full bg-orange-50 hover:bg-orange-100 text-[#ea580c] py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 group"
           >
             <AlertTriangle size={11} className="group-hover:animate-bounce" />
-            <span className="text-[9px] font-black uppercase tracking-widest italic">+10 Min Stress</span>
+            <span className="text-[9px] font-black uppercase tracking-widest">+10 Min Stress</span>
           </button>
         </div>
 
@@ -167,7 +167,7 @@ export function Sidebar({ tenant }: SidebarProps) {
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
               <Truck size={12} className="text-blue-500" />
-              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 italic">Levering</span>
+              <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">Levering</span>
             </div>
             <button
               onClick={() => {
@@ -184,7 +184,7 @@ export function Sidebar({ tenant }: SidebarProps) {
           </div>
           <div className={`space-y-1.5 transition-all duration-300 ${deliveryEnabled ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
             <div className="flex items-center justify-between bg-slate-50 rounded-xl px-3 py-1.5 border border-slate-100">
-              <span className="text-[8px] font-black uppercase text-slate-400 italic">Pris (kr.)</span>
+              <span className="text-[8px] font-black uppercase text-slate-400">Pris (kr.)</span>
               <input
                 type="number"
                 value={deliveryPrice}
@@ -194,7 +194,7 @@ export function Sidebar({ tenant }: SidebarProps) {
               />
             </div>
             <div className="flex items-center justify-between bg-slate-50 rounded-xl px-3 py-1.5 border border-slate-100">
-              <span className="text-[8px] font-black uppercase text-slate-400 italic">Tid (min.)</span>
+              <span className="text-[8px] font-black uppercase text-slate-400">Tid (min.)</span>
               <input
                 type="number"
                 value={deliveryTime}
@@ -203,7 +203,7 @@ export function Sidebar({ tenant }: SidebarProps) {
                 className="bg-transparent text-right text-xs font-black text-slate-800 focus:outline-none w-10"
               />
             </div>
-            <p className="text-[8px] font-bold uppercase text-slate-400 text-center italic">
+            <p className="text-[8px] font-bold uppercase text-slate-400 text-center">
               {deliveryEnabled ? 'Levering tilbydes kunder nu' : 'Kun afhentning muligt'}
             </p>
           </div>
@@ -215,7 +215,7 @@ export function Sidebar({ tenant }: SidebarProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 <div className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`} />
-                <span className={`text-[9px] font-black italic uppercase tracking-widest ${isOnline ? 'text-white' : 'text-slate-500'}`}>
+                <span className={`text-[9px] font-black uppercase tracking-widest ${isOnline ? 'text-white' : 'text-slate-500'}`}>
                   Mait er {isOnline ? 'Online' : 'Offline'}
                 </span>
               </div>
@@ -232,7 +232,7 @@ export function Sidebar({ tenant }: SidebarProps) {
                   : <ToggleLeft size={28} strokeWidth={1.5} />}
               </button>
             </div>
-            <p className="text-[8px] font-bold uppercase leading-tight text-slate-400 italic">
+            <p className="text-[8px] font-bold uppercase leading-tight text-slate-400">
               {isOnline
                 ? 'AI besvarer alle opkald og beskeder.'
                 : 'AI deaktiveret. Kunder kan ikke bestille.'}
@@ -243,7 +243,7 @@ export function Sidebar({ tenant }: SidebarProps) {
 
         {/* Support */}
         <div className="w-full rounded-lg border border-orange-500/20 bg-orange-500/5 p-2.5 mb-1 space-y-1.5">
-          <p className="text-center text-[8px] font-black uppercase tracking-widest italic text-orange-400 mb-2">
+          <p className="text-center text-[8px] font-black uppercase tracking-widest text-orange-400 mb-2">
             Support
           </p>
           <a
@@ -269,7 +269,7 @@ export function Sidebar({ tenant }: SidebarProps) {
         {/* Log ud */}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 py-2.5 text-[9px] font-black uppercase italic text-slate-300 hover:text-red-500 transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-2.5 text-[9px] font-black uppercase text-slate-300 hover:text-red-500 transition-colors"
         >
           <LogOut size={13} /> Log ud
         </button>

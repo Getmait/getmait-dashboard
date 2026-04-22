@@ -112,7 +112,7 @@ export default async function VoicePage({
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-end gap-6">
         <div>
-          <h2 className="text-3xl font-black italic uppercase tracking-tighter text-slate-800 leading-none">
+          <h2 className="text-3xl font-black uppercase tracking-tighter text-slate-800 leading-none">
             Voice & Opkald
           </h2>
           <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-2 leading-none">
@@ -122,7 +122,7 @@ export default async function VoicePage({
         <div className="bg-white border border-slate-200 px-6 py-3 rounded-2xl flex items-center gap-4 shadow-sm">
           <div className="flex flex-col">
             <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Linje Status</span>
-            <span className={`text-xs font-black uppercase italic leading-none ${tenant.is_online ? 'text-green-600' : 'text-slate-400'}`}>
+            <span className={`text-xs font-black uppercase leading-none ${tenant.is_online ? 'text-green-600' : 'text-slate-400'}`}>
               {tenant.is_online ? 'Aktiv & Klar' : 'Offline'}
             </span>
           </div>
@@ -145,10 +145,10 @@ export default async function VoicePage({
             <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-1 leading-none">
               {stat.label}
             </p>
-            <h3 className="text-3xl font-black text-slate-900 italic tracking-tight leading-none">
+            <h3 className="text-3xl font-black text-slate-900 tracking-tight leading-none">
               {stat.value}
             </h3>
-            <p className="text-[9px] font-bold text-slate-300 uppercase italic leading-none mt-1">
+            <p className="text-[9px] font-bold text-slate-300 uppercase leading-none mt-1">
               {stat.sub}
             </p>
           </div>
@@ -166,15 +166,15 @@ export default async function VoicePage({
                   <Mic2 size={20} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black italic uppercase leading-none mb-1">Seneste Opkald</h3>
-                  <p className="text-[9px] font-bold text-slate-300 uppercase italic leading-none">Opdateres i realtid</p>
+                  <h3 className="text-lg font-black uppercase leading-none mb-1">Seneste Opkald</h3>
+                  <p className="text-[9px] font-bold text-slate-300 uppercase leading-none">Opdateres i realtid</p>
                 </div>
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-400 text-[8px] font-black uppercase tracking-[0.2em] italic border-b border-slate-100">
+                  <tr className="bg-slate-50 text-slate-400 text-[8px] font-black uppercase tracking-[0.2em] border-b border-slate-100">
                     <th className="px-8 py-5">Kunde / Type</th>
                     <th className="px-6 py-5">Bestilling / Info</th>
                     <th className="px-6 py-5">Status</th>
@@ -184,7 +184,7 @@ export default async function VoicePage({
                 <tbody className="divide-y divide-slate-50">
                   {alle.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="px-8 py-12 text-center text-slate-300 font-semibold italic">
+                      <td colSpan={4} className="px-8 py-12 text-center text-slate-300 font-semibold">
                         Ingen opkald endnu
                       </td>
                     </tr>
@@ -197,7 +197,7 @@ export default async function VoicePage({
                       <tr key={order.id} className="hover:bg-slate-50/50 transition-colors group">
                         <td className="px-8 py-5">
                           <div className="flex flex-col gap-1">
-                            <span className="text-sm font-black uppercase italic text-slate-800 leading-none">
+                            <span className="text-sm font-black uppercase text-slate-800 leading-none">
                               {order.kunde_navn ?? order.kunde_tlf ?? 'Ukendt nr.'}
                             </span>
                             <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.1em] leading-none">
@@ -208,7 +208,7 @@ export default async function VoicePage({
                         <td className="px-6 py-5">
                           <div className="flex items-center gap-3 max-w-xs">
                             <div className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0 shadow-[0_0_5px_rgba(249,115,22,0.4)]" />
-                            <p className="text-[11px] font-bold text-slate-500 italic leading-tight truncate">
+                            <p className="text-[11px] font-bold text-slate-500 leading-tight truncate">
                               &ldquo;{resumé}&rdquo;
                             </p>
                           </div>
@@ -219,7 +219,7 @@ export default async function VoicePage({
                           </span>
                         </td>
                         <td className="px-8 py-5 text-right">
-                          <span className="text-[9px] font-black text-slate-300 uppercase italic whitespace-nowrap leading-none">
+                          <span className="text-[9px] font-black text-slate-300 uppercase whitespace-nowrap leading-none">
                             {format(new Date(order.oprettet_at), 'd. MMM HH:mm', { locale: da })}
                           </span>
                         </td>
@@ -237,15 +237,15 @@ export default async function VoicePage({
 
           {/* EFFEKTIVITET GAUGE */}
           <div className="bg-slate-900 text-white rounded-[2.5rem] p-8 shadow-xl relative overflow-hidden group">
-            <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-orange-400 mb-8 italic leading-none">
+            <h4 className="text-[9px] font-black uppercase tracking-[0.3em] text-orange-400 mb-8 leading-none">
               Telefon-effektivitet
             </h4>
             <div className="space-y-6 relative z-10">
               <div>
-                <p className="text-5xl font-black italic tracking-tighter text-white leading-none">
+                <p className="text-5xl font-black tracking-tighter text-white leading-none">
                   {automationsgrad}%
                 </p>
-                <p className="text-[9px] font-bold uppercase text-slate-500 tracking-widest mt-1 italic leading-none">
+                <p className="text-[9px] font-bold uppercase text-slate-500 tracking-widest mt-1 leading-none">
                   Bestillinger klaret 100% af AI
                 </p>
               </div>
@@ -270,7 +270,7 @@ export default async function VoicePage({
               </h4>
             </div>
             <div className="space-y-2 relative z-10">
-              <p className="text-3xl font-black italic text-slate-900 leading-none">
+              <p className="text-3xl font-black text-slate-900 leading-none">
                 {besvarede * 3} min.
               </p>
               <div className="flex items-center gap-2">
@@ -280,7 +280,7 @@ export default async function VoicePage({
                 </span>
               </div>
             </div>
-            <p className="text-[10px] font-medium italic text-slate-400 mt-4 leading-relaxed relative z-10">
+            <p className="text-[10px] font-medium text-slate-400 mt-4 leading-relaxed relative z-10">
               {timerSparet > 0
                 ? `Du har sparet ${timerSparet} timer på ikke at tale i telefon. Det svarer til ca. ${timerSparet * 12} ekstra pizzaer.`
                 : 'Opkald besvaret af Mait registreres automatisk her.'}
@@ -298,10 +298,10 @@ export default async function VoicePage({
             <CheckCircle2 size={24} className="text-white" />
           </div>
           <div>
-            <h4 className="text-lg font-black uppercase italic tracking-tighter mb-1 text-orange-500 leading-none">
+            <h4 className="text-lg font-black uppercase tracking-tighter mb-1 text-orange-500 leading-none">
               Kvalitetssikring & Logning
             </h4>
-            <p className="text-slate-400 font-medium italic text-xs max-w-md leading-relaxed">
+            <p className="text-slate-400 font-medium text-xs max-w-md leading-relaxed">
               Alle opkald bliver transskriberet af Mait i realtid. Du kan altid gense resuméet herover,
               hvis der opstår tvivl om en bestilling.
             </p>

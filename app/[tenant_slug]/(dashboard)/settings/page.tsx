@@ -203,13 +203,13 @@ export default function SettingsPage() {
     'w-full bg-slate-50 border-2 border-transparent rounded-[2rem] py-6 pl-16 pr-8 text-sm font-bold focus:border-[#ea580c]/20 focus:bg-white outline-none transition-all placeholder:text-slate-300 text-slate-900'
 
   const labelClass =
-    'text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 italic leading-none block'
+    'text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1 leading-none block'
 
   const iconWrap =
     'absolute inset-y-0 left-6 flex items-center text-slate-300 group-focus-within/input:text-[#ea580c] transition-colors pointer-events-none'
 
   const submitBtn =
-    'bg-slate-900 text-white px-10 py-6 rounded-[2.2rem] font-black uppercase italic text-xs tracking-[0.2em] shadow-xl hover:bg-[#ea580c] active:scale-95 transition-all flex items-center gap-3 min-w-[200px] justify-center leading-none disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-slate-900 disabled:hover:scale-100'
+    'bg-slate-900 text-white px-10 py-6 rounded-[2.2rem] font-black uppercase text-xs tracking-[0.2em] shadow-xl hover:bg-[#ea580c] active:scale-95 transition-all flex items-center gap-3 min-w-[200px] justify-center leading-none disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-slate-900 disabled:hover:scale-100'
 
   return (
     <div className="min-h-full text-slate-900 pb-16">
@@ -225,9 +225,9 @@ export default function SettingsPage() {
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 bg-white px-4 py-1.5 rounded-full shadow-sm border border-slate-100 mb-1">
             <Settings size={14} className="text-[#ea580c]" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 italic">Indstillinger</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Indstillinger</span>
           </div>
-          <h1 className="text-5xl font-black uppercase italic tracking-tighter text-slate-900 leading-none">
+          <h1 className="text-5xl font-black uppercase tracking-tighter text-slate-900 leading-none">
             Min <span className="text-[#ea580c]">Konto</span>
           </h1>
         </div>
@@ -265,13 +265,13 @@ export default function SettingsPage() {
             <div className="relative z-10 flex flex-col items-center">
               <div className="relative mb-6">
                 <div className="w-28 h-28 bg-slate-100 rounded-[2.5rem] flex items-center justify-center border-4 border-white shadow-xl">
-                  <span className="text-4xl font-black italic text-slate-400">{initial}</span>
+                  <span className="text-4xl font-black text-slate-400">{initial}</span>
                 </div>
               </div>
-              <h3 className="text-2xl font-black uppercase italic tracking-tighter text-slate-900 leading-none">
+              <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900 leading-none">
                 {displayName}
               </h3>
-              <p className="text-[#ea580c] font-bold text-[10px] uppercase tracking-[0.2em] mt-2 italic">
+              <p className="text-[#ea580c] font-bold text-[10px] uppercase tracking-[0.2em] mt-2">
                 {tenant?.name ?? ''}
               </p>
 
@@ -281,8 +281,8 @@ export default function SettingsPage() {
                     <ShieldCheck size={16} />
                   </div>
                   <div>
-                    <p className="text-[8px] font-black text-slate-400 uppercase italic leading-none">Abonnement</p>
-                    <p className="text-xs font-bold text-green-600 leading-none mt-1 uppercase italic">
+                    <p className="text-[8px] font-black text-slate-400 uppercase leading-none">Abonnement</p>
+                    <p className="text-xs font-bold text-green-600 leading-none mt-1 uppercase">
                       {tenant?.plan === 'starter' ? 'Starter' : tenant?.plan === 'pro' ? 'Pro' : 'Enterprise'}
                     </p>
                   </div>
@@ -293,7 +293,7 @@ export default function SettingsPage() {
                       <Hash size={16} />
                     </div>
                     <div>
-                      <p className="text-[8px] font-black text-slate-400 uppercase italic leading-none">CVR Nummer</p>
+                      <p className="text-[8px] font-black text-slate-400 uppercase leading-none">CVR Nummer</p>
                       <p className="text-xs font-bold text-slate-700 leading-none mt-1">{businessData.cvr}</p>
                     </div>
                   </div>
@@ -309,9 +309,9 @@ export default function SettingsPage() {
               <div className="relative z-10 space-y-4">
                 <div className="flex items-center gap-2 text-orange-400">
                   <ShieldAlert size={16} />
-                  <span className="text-[10px] font-black uppercase tracking-widest italic leading-none">Ekspertråd</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest leading-none">Ekspertråd</span>
                 </div>
-                <p className="text-sm font-medium italic text-slate-300 leading-relaxed">
+                <p className="text-sm font-medium text-slate-300 leading-relaxed">
                   Vælg en adgangskode med mindst 12 tegn, inklusiv tal og symboler, for at sikre dit dashboard bedst muligt.
                 </p>
               </div>
@@ -328,7 +328,7 @@ export default function SettingsPage() {
               <div className="space-y-8">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="p-2 bg-orange-50 rounded-lg text-[#ea580c]"><User size={20} /></div>
-                  <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">Personlig Profil</h2>
+                  <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-800 leading-none">Personlig Profil</h2>
                 </div>
                 <form onSubmit={handleSaveProfile} className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
@@ -383,7 +383,7 @@ export default function SettingsPage() {
               <div className="space-y-10">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-orange-50 rounded-lg text-[#ea580c]"><Store size={20} /></div>
-                  <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">Forretningsinfo</h2>
+                  <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-800 leading-none">Forretningsinfo</h2>
                 </div>
                 <form onSubmit={handleSaveBusiness} className="space-y-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -445,7 +445,7 @@ export default function SettingsPage() {
                   <div className="space-y-6">
                     <div className="flex items-center gap-3">
                       <Clock size={18} className="text-[#ea580c]" />
-                      <h3 className="text-xl font-black uppercase italic tracking-tighter text-slate-800">Åbningstider</h3>
+                      <h3 className="text-xl font-black uppercase tracking-tighter text-slate-800">Åbningstider</h3>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 bg-slate-50/50 p-6 rounded-[2.5rem] border border-slate-100">
                       {Object.entries(openingHours).map(([dag, tid], i, arr) => (
@@ -453,7 +453,7 @@ export default function SettingsPage() {
                           key={dag}
                           className={`flex items-center justify-between px-4 py-3 ${i < arr.length - 1 ? 'border-b border-slate-100' : ''}`}
                         >
-                          <span className="text-[10px] font-black uppercase text-slate-400 italic capitalize">{dag}</span>
+                          <span className="text-[10px] font-black uppercase text-slate-400 capitalize">{dag}</span>
                           <input
                             type="text"
                             value={tid}
@@ -480,7 +480,7 @@ export default function SettingsPage() {
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-orange-50 rounded-2xl text-[#ea580c]"><KeyRound size={24} /></div>
                   <div>
-                    <h2 className="text-3xl font-black uppercase italic tracking-tighter text-slate-800 leading-none">Sikkerhed</h2>
+                    <h2 className="text-3xl font-black uppercase tracking-tighter text-slate-800 leading-none">Sikkerhed</h2>
                     <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">Skift din adgangskode herunder</p>
                   </div>
                 </div>
@@ -533,7 +533,7 @@ export default function SettingsPage() {
                     </button>
                     <div className="p-6 bg-orange-50/50 rounded-[2rem] border border-orange-100 flex items-start gap-4 max-w-lg">
                       <AlertCircle size={20} className="text-[#ea580c] shrink-0 mt-0.5" />
-                      <p className="text-[11px] font-medium text-slate-500 leading-relaxed italic">
+                      <p className="text-[11px] font-medium text-slate-500 leading-relaxed">
                         Når du skifter din adgangskode, vil du blive logget ud af alle andre aktive enheder.
                       </p>
                     </div>
@@ -557,7 +557,7 @@ export default function SettingsPage() {
                   <AlertCircle size={18} className="text-red-500" />
                 )}
                 <span
-                  className={`text-[11px] font-black uppercase italic tracking-widest leading-none ${
+                  className={`text-[11px] font-black uppercase tracking-widest leading-none ${
                     saveStatus === 'success' ? 'text-green-700' : 'text-red-600'
                   }`}
                 >
@@ -574,16 +574,16 @@ export default function SettingsPage() {
         <div className="flex items-center gap-10">
           <div className="flex items-center gap-2">
             <ShieldCheck size={14} className="text-[#ea580c]" />
-            <span className="text-[10px] font-black uppercase tracking-widest italic">Sikker datahåndtering</span>
+            <span className="text-[10px] font-black uppercase tracking-widest">Sikker datahåndtering</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-black uppercase tracking-widest italic">Support: help@getmait.dk</span>
+            <span className="text-[10px] font-black uppercase tracking-widest">Support: help@getmait.dk</span>
             <span className="text-slate-600">·</span>
-            <span className="text-[10px] font-black uppercase tracking-widest italic">+45 21 74 98 72</span>
+            <span className="text-[10px] font-black uppercase tracking-widest">+45 21 74 98 72</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[8px] font-black uppercase tracking-[0.5em] italic">GetMait Partner Portal</span>
+          <span className="text-[8px] font-black uppercase tracking-[0.5em]">GetMait Partner Portal</span>
           <Sparkles size={9} className="text-[#ea580c]" />
         </div>
       </footer>
